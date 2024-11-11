@@ -19,7 +19,7 @@ class QuoteCache {
     final List<Map<String, dynamic>> maps =
         await databaseManager.instance.query('quotesTable');
 
-    return List.generate(maps.length, (int i) {
+    return List<Quotes>.generate(maps.length, (int i) {
       return Quotes(
         quote: maps[i]['name'] as String,
       );

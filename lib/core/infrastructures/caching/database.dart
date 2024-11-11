@@ -27,6 +27,17 @@ class DatabaseManager {
 
   Database get instance => database!;
 
+  Future<void> truncateLogBase() async {
+    if (database == null) {
+      await open();
+    }
+
+    final Batch batch = database!.batch();
+    batch.delete('quotesTable');
+    batch.delete('catsTable');
+
+    await batch.commit(noResult: true);
+  }
   // Future<List<Item>> getUnsyncedItems() async {
   //   final List<Map<String, dynamic>> maps = await database!.query(
   //     'items',
