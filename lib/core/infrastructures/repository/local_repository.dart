@@ -100,3 +100,31 @@ class Item {
     };
   }
 }
+
+class Quotes {
+  Quotes({
+    required this.quote,
+  });
+  final String quote;
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': DateTime.now().millisecondsSinceEpoch,
+      'name': quote,
+    };
+  }
+}
+
+class Cats {
+  Cats({
+    required this.cat,
+  });
+  final String cat;
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': DateTime.now().millisecondsSinceEpoch,
+      'name': cat,
+    };
+  }
+}

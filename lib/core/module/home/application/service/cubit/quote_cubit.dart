@@ -1,23 +1,25 @@
 import 'package:flirt/core/infrastructures/repository/local_repository.dart';
+import 'package:flirt/core/infrastructures/repository/quote_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-part 'home_state.dart';
+part 'quote_state.dart';
 
-class HomeCubit extends Cubit<HomeState> {
-  HomeCubit() : super(HomeState());
+class QuoteCubit extends Cubit<QuoteState> {
+  QuoteCubit({
+    required this.quoteRepository,
+  }) : super(QuoteState());
+  final QuoteRepository quoteRepository;
 
-  void connectivityChange(bool connected) =>
-      emit(ConnectivityChanges(connected: connected));
-  // Future<void> getAllData() async {
-  //   emit(FetchItemsLoading());
-  //   try {
-  //     final List<Item> getLocalItems = await workOrderRepository.getItems();
+  Future<void> getAllQuotes() async {
+    emit(FetchQuotesLoading());
+    try {
+      final List<Quotes> getLocalItems = await quoteRepository.fetchQuote();
 
-  //     emit(FetchItemsSuccess(items: getLocalItems));
-  //   } catch (_) {
-  //     emit(FetchItemsFailed());
-  //   }
-  // }
+      emit(FetchQuotesSuccess(quotes: getLocalItems));
+    } catch (_) {
+      emit(FetchQuotesFailed());
+    }
+  }
 
   Future<void> addData(Item item) async {
     // emit(AddItemsLoading());

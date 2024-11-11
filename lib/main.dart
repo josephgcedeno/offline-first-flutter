@@ -2,13 +2,12 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flirt/configs/themes.dart';
-import 'package:flirt/core/application/service/cubit/quote_api_cubit.dart';
-import 'package:flirt/core/infrastructures/repository/local_repository.dart';
+import 'package:flirt/core/infrastructures/repository/cat_repository.dart';
 import 'package:flirt/core/infrastructures/repository/quote_repository.dart';
-import 'package:flirt/core/infrastructures/repository/remote_repository.dart';
+import 'package:flirt/core/module/home/application/service/cubit/cat_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
-import 'package:flirt/core/module/home/interfaces/screens/home_screen.dart';
-import 'package:flirt/internal/utils.dart';
+import 'package:flirt/core/module/home/application/service/cubit/quote_cubit.dart';
+import 'package:flirt/core/module/home/interfaces/screens/read_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,20 +24,20 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LocalRepository localRepository = LocalRepository();
-    final RemoteRepository remoteRepository = RemoteRepository();
     return MultiBlocProvider(
       providers: <BlocProvider<dynamic>>[
-        BlocProvider<QuoteAPICubit>(
-          create: (BuildContext context) => QuoteAPICubit(
+        BlocProvider<QuoteCubit>(
+          create: (BuildContext context) => QuoteCubit(
             quoteRepository: QuoteRepository(),
           ),
         ),
-        BlocProvider<HomeCubit>(
-          create: (BuildContext context) => HomeCubit(
-            localRepository: localRepository,
-            remoteRepository: remoteRepository,
+        BlocProvider<CatCubit>(
+          create: (BuildContext context) => CatCubit(
+            catRepository: CatRepository(),
           ),
+        ),
+        BlocProvider<HomeCubit>(
+          create: (BuildContext context) => HomeCubit(),
         ),
       ],
       child: MaterialApp(
@@ -74,17 +73,8 @@ class _HomePageStateState extends State<_HomePageState> {
       final bool isConnected = result.last != ConnectivityResult.none;
 
       if (!mounted) return;
-      showSnackbar(
-        context,
-        isSuccessful: isConnected,
-        message: isConnected ? 'Syncing' : 'Offline',
-      );
-
-      if (result.first != ConnectivityResult.none) {
-        if (!mounted) return;
-
-        context.read<HomeCubit>().syncDataWhenOnline();
-      }
+      context.read<HomeCubit>().connectivityChange(isConnected);
+      return;
     });
   }
 
@@ -102,6 +92,6 @@ class _HomePageStateState extends State<_HomePageState> {
 
   @override
   Widget build(BuildContext context) {
-    return const HomeScreen();
+    return const ReadScreen();
   }
 }
