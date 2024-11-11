@@ -2,36 +2,44 @@ part of 'home_cubit.dart';
 
 class HomeState {}
 
-class FetchItemsLoading extends HomeState {}
-
-class FetchItemsSuccess extends HomeState {
-  FetchItemsSuccess({
-    required this.items,
+class ConnectivityChanges extends HomeState {
+  ConnectivityChanges({
+    required this.connected,
   });
 
-  final List<Item> items;
+  final bool connected;
 }
 
-class FetchItemsFailed extends HomeState {}
+// class FetchItemsLoading extends HomeState {}
 
-class AddItemsLoading extends HomeState {}
+// class FetchItemsSuccess extends HomeState {
+//   FetchItemsSuccess({
+//     required this.items,
+//   });
 
-class AddItemsSuccess extends HomeState {
-  AddItemsSuccess({
-    required this.item,
-  });
+//   final List<Item> items;
+// }
 
-  final Item item;
-}
+// class FetchItemsFailed extends HomeState {}
 
-class AddItemsFailed extends HomeState {}
+// class AddItemsLoading extends HomeState {}
 
-class FetchSyncDataSuccess extends HomeState {
-  FetchSyncDataSuccess({
-    required this.items,
-  });
+// class AddItemsSuccess extends HomeState {
+//   AddItemsSuccess({
+//     required this.item,
+//   });
 
-  final List<Item> items;
-}
+//   final Item item;
+// }
 
-class FetchSyncDataFailed extends HomeState {}
+// class AddItemsFailed extends HomeState {}
+
+// class FetchSyncDataSuccess extends HomeState {
+//   FetchSyncDataSuccess({
+//     required this.items,
+//   });
+
+//   final List<Item> items;
+// }
+
+// class FetchSyncDataFailed extends HomeState {}
