@@ -48,6 +48,9 @@ class _ReadScreenState extends State<ReadScreen> {
                   ),
                 ),
               );
+
+              context.read<CatCubit>().getAllCat();
+              context.read<QuoteCubit>().getAllQuotes();
             } else {
               item = Container(
                 width: double.infinity,
@@ -95,37 +98,61 @@ class _ReadScreenState extends State<ReadScreen> {
                   children: <Widget>[
                     Expanded(
                       child: Center(
-                        child: BlocBuilder<CatCubit, CatState>(
-                          buildWhen: (CatState previous, CatState current) =>
-                              current is FetchItemsSuccess,
-                          builder: (BuildContext context, CatState state) {
-                            if (state is FetchItemsSuccess) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(state.items.last.cat),
-                              );
-                            }
-                            return const CircularProgressIndicator();
-                          },
+                        child: Column(
+                          children: <Widget>[
+                            const Text(
+                              'Cat API',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
+                            ),
+                            BlocBuilder<CatCubit, CatState>(
+                              buildWhen:
+                                  (CatState previous, CatState current) =>
+                                      current is FetchItemsSuccess,
+                              builder: (BuildContext context, CatState state) {
+                                if (state is FetchItemsSuccess) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(state.items.last.cat),
+                                  );
+                                }
+                                return const CircularProgressIndicator();
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
                     const Divider(),
                     Expanded(
                       child: Center(
-                        child: BlocBuilder<QuoteCubit, QuoteState>(
-                          buildWhen:
-                              (QuoteState previous, QuoteState current) =>
-                                  current is FetchQuotesSuccess,
-                          builder: (BuildContext context, QuoteState state) {
-                            if (state is FetchQuotesSuccess) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(state.quotes.last.quote),
-                              );
-                            }
-                            return const CircularProgressIndicator();
-                          },
+                        child: Column(
+                          children: <Widget>[
+                            const Text(
+                              'Quote API',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
+                            ),
+                            BlocBuilder<QuoteCubit, QuoteState>(
+                              buildWhen:
+                                  (QuoteState previous, QuoteState current) =>
+                                      current is FetchQuotesSuccess,
+                              builder:
+                                  (BuildContext context, QuoteState state) {
+                                if (state is FetchQuotesSuccess) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(state.quotes.last.quote),
+                                  );
+                                }
+                                return const CircularProgressIndicator();
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
