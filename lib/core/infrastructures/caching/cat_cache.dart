@@ -1,4 +1,5 @@
 import 'package:flirt/core/infrastructures/caching/database.dart';
+import 'package:flirt/core/infrastructures/caching/database_constant.dart';
 import 'package:flirt/core/infrastructures/repository/local_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -14,13 +15,11 @@ class CatCache {
   }
 
   Future<List<Cats>> _getLocalItems() async {
-    if (databaseManager.database == null) {
-      await databaseManager.open();
-    }
-    final List<Map<String, dynamic>> maps =
-        await databaseManager.instance.query('catsTable');
-    // ignore: always_specify_types
-    return List.generate(maps.length, (int i) {
+    final Database dbInstance = await databaseManager.instance;
+
+    final List<Map<String, dynamic>> maps = await dbInstance.query(catsTable);
+
+    return List<Cats>.generate(maps.length, (int i) {
       return Cats(
         cat: maps[i]['name'] as String,
       );
@@ -28,11 +27,10 @@ class CatCache {
   }
 
   Future<int> _insert(Cats item) async {
-    if (databaseManager.database == null) {
-      await databaseManager.open();
-    }
-    return await databaseManager.instance.insert(
-      'catsTable',
+    final Database dbInstance = await databaseManager.instance;
+
+    return await dbInstance.insert(
+      catsTable,
       item.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

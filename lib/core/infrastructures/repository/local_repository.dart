@@ -109,7 +109,6 @@ class Quotes {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': DateTime.now().millisecondsSinceEpoch,
       'name': quote,
     };
   }
@@ -123,7 +122,6 @@ class Cats {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': DateTime.now().millisecondsSinceEpoch,
       'name': cat,
     };
   }
