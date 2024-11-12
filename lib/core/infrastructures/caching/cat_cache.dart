@@ -35,4 +35,12 @@ class CatCache {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+  Future<void> truncateRecord() async {
+    final Database dbInstance = await databaseManager.instance;
+
+    dbInstance.batch()
+      ..delete(catsTable)
+      ..commit(noResult: true);
+  }
 }

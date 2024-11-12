@@ -31,4 +31,12 @@ class QuoteCache {
 
     return await dbInstance.insert('quotesTable', item.toMap());
   }
+
+  Future<void> truncateRecord() async {
+    final Database dbInstance = await databaseManager.instance;
+
+    dbInstance.batch()
+      ..delete(quotesTable)
+      ..commit(noResult: true);
+  }
 }
