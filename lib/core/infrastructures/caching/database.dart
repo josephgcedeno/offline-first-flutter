@@ -10,15 +10,15 @@ class DatabaseManager {
   Future<Database> get instance async => _database ??= await initializeDb();
 
   Future<Database> initializeDb() async => _database = await openDatabase(
-        join(await getDatabasesPath(), 'sampleapp.db'),
+        join(await getDatabasesPath(), 'SampleApp.db'),
         version: 1,
         onCreate: (Database db, int version) async {
           await db.execute(
-            'CREATE TABLE $quotesTable(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT)',
+            'CREATE TABLE $quotesTable(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT, createdAt INTEGER, synced INTEGER)',
           );
 
           await db.execute(
-            'CREATE TABLE $catsTable(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT)',
+            'CREATE TABLE $catsTable(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT, createdAt INTEGER, synced INTEGER)',
           );
         },
       );
