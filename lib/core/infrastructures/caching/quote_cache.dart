@@ -1,5 +1,7 @@
 import 'package:flirt/core/infrastructures/caching/database.dart';
+import 'package:flirt/core/infrastructures/caching/database_constant.dart';
 import 'package:flirt/core/infrastructures/repository/local_repository.dart';
+import 'package:sqflite/sqlite_api.dart';
 
 class QuoteCache {
   final DatabaseManager databaseManager = DatabaseManager();
@@ -13,11 +15,9 @@ class QuoteCache {
   }
 
   Future<List<Quotes>> _getLocalItems() async {
-    if (databaseManager.database == null) {
-      await databaseManager.open();
-    }
-    final List<Map<String, dynamic>> maps =
-        await databaseManager.instance.query('quotesTable');
+    final Database dbInstance = await databaseManager.instance;
+
+    final List<Map<String, dynamic>> maps = await dbInstance.query(quotesTable);
 
     return List<Quotes>.generate(maps.length, (int i) {
       return Quotes(
@@ -27,10 +27,16 @@ class QuoteCache {
   }
 
   Future<int> _insert(Quotes item) async {
-    if (databaseManager.database == null) {
-      await databaseManager.open();
-    }
+    final Database dbInstance = await databaseManager.instance;
 
-    return await databaseManager.instance.insert('quotesTable', item.toMap());
+    return await dbInstance.insert('quotesTable', item.toMap());
+  }
+
+  Future<void> truncateRecord() async {
+    final Database dbInstance = await databaseManager.instance;
+
+    dbInstance.batch()
+      ..delete(quotesTable)
+      ..commit(noResult: true);
   }
 }

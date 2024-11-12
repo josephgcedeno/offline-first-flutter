@@ -104,13 +104,16 @@ class Item {
 class Quotes {
   Quotes({
     required this.quote,
+    this.synced,
   });
   final String quote;
+  int? synced;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': DateTime.now().millisecondsSinceEpoch,
       'name': quote,
+      'createdAt': DateTime.now().millisecondsSinceEpoch,
+      'synced': synced ?? 0,
     };
   }
 }
@@ -118,13 +121,16 @@ class Quotes {
 class Cats {
   Cats({
     required this.cat,
+    this.synced,
   });
   final String cat;
+  int? synced;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': DateTime.now().millisecondsSinceEpoch,
       'name': cat,
+      'createdAt': DateTime.now().millisecondsSinceEpoch,
+      'synced': synced ?? 0,
     };
   }
 }

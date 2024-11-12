@@ -15,11 +15,19 @@ class ReadScreen extends StatefulWidget {
 class _ReadScreenState extends State<ReadScreen> {
   Widget? item;
 
+  int totalCatRecord = 0;
+  int totalQuoteRecord = 0;
+
+  void fetchRecord() {
+    context.read<CatCubit>().getAllCat();
+    context.read<QuoteCubit>().getAllQuotes();
+  }
+
   @override
   void initState() {
     super.initState();
-    context.read<CatCubit>().getAllCat();
-    context.read<QuoteCubit>().getAllQuotes();
+
+    fetchRecord();
   }
 
   @override
@@ -72,7 +80,6 @@ class _ReadScreenState extends State<ReadScreen> {
             }),
           );
         }
-        // TODO: implement listener
       },
       child: Scaffold(
         backgroundColor: Colors.grey,
@@ -100,19 +107,35 @@ class _ReadScreenState extends State<ReadScreen> {
                       child: Center(
                         child: Column(
                           children: <Widget>[
-                            const Text(
-                              'Cat API',
-                              style: TextStyle(
+                            Text(
+                              'Cat API: $totalCatRecord',
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
                               ),
                             ),
-                            BlocBuilder<CatCubit, CatState>(
+                            BlocConsumer<CatCubit, CatState>(
+                              listenWhen:
+                                  (CatState previous, CatState current) =>
+                                      current is ClearLocalCatsSuccess ||
+                                      current is FetchItemsSuccess ||
+                                      current is SaveCatsSuccess,
+                              listener: (BuildContext context, CatState state) {
+                                if (state is FetchItemsSuccess) {
+                                  setState(() {
+                                    totalCatRecord = state.items.length;
+                                  });
+                                } else if (state is SaveCatsSuccess ||
+                                    state is ClearLocalCatsSuccess) {
+                                  context.read<CatCubit>().getAllCat();
+                                }
+                              },
                               buildWhen:
                                   (CatState previous, CatState current) =>
                                       current is FetchItemsSuccess,
                               builder: (BuildContext context, CatState state) {
-                                if (state is FetchItemsSuccess) {
+                                if (state is FetchItemsSuccess &&
+                                    state.items.isNotEmpty) {
                                   return Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(state.items.last.cat),
@@ -120,6 +143,23 @@ class _ReadScreenState extends State<ReadScreen> {
                                 }
                                 return const CircularProgressIndicator();
                               },
+                            ),
+                            const Spacer(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      context.read<CatCubit>().saveRecord(),
+                                  child: const Text('Save'),
+                                ),
+                                const SizedBox(width: 10),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      context.read<CatCubit>().deleteRecord(),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -130,20 +170,37 @@ class _ReadScreenState extends State<ReadScreen> {
                       child: Center(
                         child: Column(
                           children: <Widget>[
-                            const Text(
-                              'Quote API',
-                              style: TextStyle(
+                            Text(
+                              'Quote API: $totalQuoteRecord',
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
                               ),
                             ),
-                            BlocBuilder<QuoteCubit, QuoteState>(
+                            BlocConsumer<QuoteCubit, QuoteState>(
+                              listenWhen:
+                                  (QuoteState previous, QuoteState current) =>
+                                      current is ClearLocalQuotesSuccess ||
+                                      current is SaveItemsSuccess ||
+                                      current is FetchQuotesSuccess,
+                              listener:
+                                  (BuildContext context, QuoteState state) {
+                                if (state is FetchQuotesSuccess) {
+                                  setState(() {
+                                    totalQuoteRecord = state.quotes.length;
+                                  });
+                                } else if (state is SaveItemsSuccess ||
+                                    state is ClearLocalQuotesSuccess) {
+                                  context.read<QuoteCubit>().getAllQuotes();
+                                }
+                              },
                               buildWhen:
                                   (QuoteState previous, QuoteState current) =>
                                       current is FetchQuotesSuccess,
                               builder:
                                   (BuildContext context, QuoteState state) {
-                                if (state is FetchQuotesSuccess) {
+                                if (state is FetchQuotesSuccess &&
+                                    state.quotes.isNotEmpty) {
                                   return Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(state.quotes.last.quote),
@@ -151,6 +208,23 @@ class _ReadScreenState extends State<ReadScreen> {
                                 }
                                 return const CircularProgressIndicator();
                               },
+                            ),
+                            const Spacer(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      context.read<QuoteCubit>().saveRecord(),
+                                  child: const Text('Save'),
+                                ),
+                                const SizedBox(width: 10),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      context.read<QuoteCubit>().deleteRecord(),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
                             ),
                           ],
                         ),

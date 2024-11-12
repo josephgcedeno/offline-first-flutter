@@ -1,70 +1,25 @@
 // ignore_for_file: depend_on_referenced_packages, directives_ordering
 
+import 'package:flirt/core/infrastructures/caching/database_constant.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseManager {
-  Database? database;
+  Database? _database;
 
-  Future<void> open() async {
-    database = await openDatabase(
-      join(await getDatabasesPath(), 'crud_database2.db'),
-      version: 1,
-      onCreate: (Database db, int version) async {
-        // await db.execute(
-        //   'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT, value INTEGER, isSync TEXT)',
-        // );
-        await db.execute(
-          'CREATE TABLE quotesTable(id INTEGER PRIMARY KEY, name TEXT)',
-        );
+  Future<Database> get instance async => _database ??= await initializeDb();
 
-        await db.execute(
-          'CREATE TABLE catsTable(id INTEGER PRIMARY KEY, name TEXT)',
-        );
-      },
-    );
-  }
+  Future<Database> initializeDb() async => _database = await openDatabase(
+        join(await getDatabasesPath(), 'SampleApp.db'),
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE $quotesTable(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT, createdAt INTEGER, synced INTEGER)',
+          );
 
-  Database get instance => database!;
-
-  Future<void> truncateLogBase() async {
-    if (database == null) {
-      await open();
-    }
-
-    final Batch batch = database!.batch();
-    batch.delete('quotesTable');
-    batch.delete('catsTable');
-
-    await batch.commit(noResult: true);
-  }
-  // Future<List<Item>> getUnsyncedItems() async {
-  //   final List<Map<String, dynamic>> maps = await database!.query(
-  //     'items',
-  //     where: 'isSync = ?',
-  //     whereArgs: <String>['false'],
-  //   );
-
-  //   return List.generate(maps.length, (int i) {
-  //     return Item(
-  //       id: maps[i]['id'] as int,
-  //       name: maps[i]['name'] as String,
-  //       value: maps[i]['value'] as int,
-  //       isSync: maps[i]['isSync'] as String == 'true',
-  //     );
-  //   });
-  // }
-
-  // Future<List<Item>> getItems() async {
-  //   final List<Map<String, dynamic>> maps = await database!.query('items');
-
-  //   return List.generate(maps.length, (int i) {
-  //     return Item(
-  //       id: maps[i]['id'] as int,
-  //       name: maps[i]['name'] as String,
-  //       value: maps[i]['value'] as int,
-  //       isSync: maps[i]['isSync'] as String == 'true',
-  //     );
-  //   });
-  // }
+          await db.execute(
+            'CREATE TABLE $catsTable(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT, createdAt INTEGER, synced INTEGER)',
+          );
+        },
+      );
 }

@@ -19,6 +19,10 @@ class QuoteRepository {
 
   final String _repositoryURL = '/api/v1/flirt/quote/random';
 
+  static final List<Quotes> remoteRecord = <Quotes>[
+    for (int i = 1; i < 5; i++) Quotes(quote: '$i record', synced: 1),
+  ];
+
   /// This getter can be used to set the base URL based on the environment,
   /// if you are running a staging/production environment
   Future<String> get _baseURL => checkEnvironment(_storage);
@@ -53,10 +57,32 @@ class QuoteRepository {
               QuoteResponse.fromJson(data! as Map<String, dynamic>),
         );
 
-        await quoteCache.saveToLocal(<Quotes>[Quotes(quote: response.body)]);
+        await quoteCache.saveToLocal(<Quotes>[
+          Quotes(
+            quote: response.body,
+            synced: 1,
+          ),
+        ]);
       }
 
       return await quoteCache.getItems();
+    } on SocketException {
+      throw APIErrorResponse.socketErrorResponse();
+    } catch (e) {
+      if (e is APIErrorResponse) rethrow;
+
+      throw APIErrorResponse.typeCastingErrorResponse();
+    }
+  }
+
+  Future<void> saveRecord(String cat) async {
+    try {
+      if (await hasConnectivity) {
+        await Future<void>.delayed(const Duration(seconds: 2));
+
+        remoteRecord.add(Quotes(quote: cat));
+      }
+      await quoteCache.saveToLocal(<Quotes>[Quotes(quote: cat)]);
     } on SocketException {
       throw APIErrorResponse.socketErrorResponse();
     } catch (e) {

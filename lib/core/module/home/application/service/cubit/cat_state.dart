@@ -13,3 +13,15 @@ class FetchItemsSuccess extends CatState {
 }
 
 class FetchItemsFailed extends CatState {}
+
+class SaveCatsLoading extends CatState {}
+
+class SaveCatsSuccess extends CatState {}
+
+class SaveCatsFailed extends CatState {}
+
+class ClearLocalCatsLoading extends CatState {}
+
+class ClearLocalCatsSuccess extends CatState {}
+
+class ClearLocalCatsFailed extends CatState {}
