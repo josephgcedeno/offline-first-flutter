@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flirt/core/infrastructures/repository/local_repository.dart';
 import 'package:flirt/core/infrastructures/repository/quote_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,6 +20,29 @@ class QuoteCubit extends Cubit<QuoteState> {
       emit(FetchQuotesSuccess(quotes: getLocalItems));
     } catch (_) {
       emit(FetchQuotesFailed());
+    }
+  }
+
+  Future<void> saveRecord() async {
+    emit(SaveItemsLoading());
+    try {
+      await quoteRepository.saveRecord('${Random().nextInt(100)} Record');
+
+      emit(SaveItemsSuccess());
+    } catch (_) {
+      emit(SaveItemsFailed());
+    }
+  }
+
+  Future<void> deleteRecord() async {
+    try {
+      emit(ClearLocalQuotesLoading());
+
+      await quoteRepository.quoteCache.truncateRecord();
+
+      emit(ClearLocalQuotesSuccess());
+    } catch (e) {
+      emit(ClearLocalQuotesFailed());
     }
   }
 
