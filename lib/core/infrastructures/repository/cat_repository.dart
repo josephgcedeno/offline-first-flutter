@@ -11,6 +11,10 @@ import 'package:http/http.dart' as http;
 class CatRepository {
   final CatCache catCache = CatCache();
 
+  static final List<Cats> remoteRecord = <Cats>[
+    for (int i = 1; i < 5; i++) Cats(cat: '$i record', synced: 1),
+  ];
+
   Future<bool> get hasConnectivity async =>
       (await Connectivity().checkConnectivity()).first !=
       ConnectivityResult.none;
@@ -40,10 +44,33 @@ class CatRepository {
           );
         }
 
-        await catCache.saveToLocal(<Cats>[Cats(cat: response.body)]);
+        await catCache.saveToLocal(<Cats>[
+          Cats(
+            cat: response.body,
+            synced: 1,
+          ),
+        ]);
       }
 
       return await catCache.getItems();
+    } on SocketException {
+      throw APIErrorResponse.socketErrorResponse();
+    } catch (e) {
+      if (e is APIErrorResponse) rethrow;
+
+      throw APIErrorResponse.typeCastingErrorResponse();
+    }
+  }
+
+  Future<void> saveRecord(String cat) async {
+    try {
+      if (await hasConnectivity) {
+        await Future<void>.delayed(const Duration(seconds: 2));
+
+        remoteRecord.add(Cats(cat: cat));
+      }
+
+      await catCache.saveToLocal(<Cats>[Cats(cat: cat)]);
     } on SocketException {
       throw APIErrorResponse.socketErrorResponse();
     } catch (e) {
