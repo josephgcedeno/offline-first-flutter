@@ -58,4 +58,56 @@ class EmployeeCubit extends Cubit<EmployeeState> {
       emit(SaveEmployeeFailed());
     }
   }
+
+  Future<void> updateRecord({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNumber,
+    required String hireDate,
+    required String jobId,
+    required double salary,
+    required double commissionPct,
+    required int managerId,
+    required int employeeId,
+    String? localId,
+  }) async {
+    emit(UpdateEmployeeLoading());
+    try {
+      final EmployeeRequest item = EmployeeRequest(
+        employeeId: employeeId,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phoneNumber: phoneNumber,
+        hireDate: hireDate,
+        jobId: jobId,
+        salary: salary,
+        commissionPct: commissionPct,
+        managerId: managerId,
+        localId: localId,
+      );
+
+      await employeeRepository.updateRecord(item);
+
+      emit(
+        UpdateEmployeeSuccess(
+          employeeResponse: EmployeeResponse(
+            employeeId: item.employeeId,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            hireDate: item.hireDate,
+            jobId: item.jobId,
+            salary: item.salary,
+            commissionPct: item.commissionPct,
+            managerId: item.managerId,
+          ),
+        ),
+      );
+    } catch (_) {
+      emit(UpdateEmployeeFailed());
+    }
+  }
 }
