@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
@@ -29,23 +28,25 @@ class HomeCubit extends Cubit<HomeState> {
       final List<String> items =
           List<String>.from(jsonDecode(modifieTables) as List<dynamic>);
 
+      int totalActions = 0;
+
       for (int i = 0; i < items.length; i++) {
-        await _syncEmployeeRecords(items[i]);
+        final int noActions = await _syncEmployeeRecords(items[i]);
+
+        totalActions += noActions;
       }
 
-      await Future<void>.delayed(const Duration(seconds: 3));
-      emit(FetchSyncDataSuccess());
+      emit(FetchSyncDataSuccess(noActions: totalActions));
     } catch (e) {
       emit(FetchSyncDataFailed());
     }
   }
 
-  Future<void> _syncEmployeeRecords(String table) async {
+  Future<int> _syncEmployeeRecords(String table) async {
     final List<EmployeeResponse> res = await employeeRepository.employeeCache
         .getUnsyncedData<EmployeeResponse>(table);
 
-    inspect(res);
-    if (res.isEmpty) return;
+    if (res.isEmpty) return 0;
 
     for (int i = 0; i < res.length; i++) {
       final EmployeeResponse item = res[i];
@@ -88,7 +89,10 @@ class HomeCubit extends Cubit<HomeState> {
         );
       }
     }
-    if (!await employeeRepository.hasConnectivity) return;
+
+    if (!await employeeRepository.hasConnectivity) return res.length;
     await employeeRepository.employeeCache.truncateRecord(table);
+
+    return res.length;
   }
 }

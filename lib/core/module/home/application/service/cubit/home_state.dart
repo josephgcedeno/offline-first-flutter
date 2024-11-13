@@ -12,6 +12,10 @@ class ConnectivityChanges extends HomeState {
 
 class FetchSyncDataLoading extends HomeState {}
 
-class FetchSyncDataSuccess extends HomeState {}
+class FetchSyncDataSuccess extends HomeState {
+  FetchSyncDataSuccess({required this.noActions});
+
+  final int noActions;
+}
 
 class FetchSyncDataFailed extends HomeState {}
