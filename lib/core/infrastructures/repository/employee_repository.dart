@@ -42,7 +42,9 @@ class EmployeeRepository {
           }).toList(),
         );
 
-        await employeeCache.saveToLocal(item);
+        employeeCache.saveToLocal(item);
+
+        return item;
       }
 
       return await employeeCache.getItems();
