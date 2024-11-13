@@ -184,6 +184,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       listeners: <BlocListener<dynamic, dynamic>>[
         BlocListener<EmployeeCubit, EmployeeState>(
           listenWhen: (EmployeeState previous, EmployeeState current) =>
+              current is DeleteEmployeeSuccess ||
               current is UpdateEmployeeSuccess ||
               current is SaveEmployeeSuccess ||
               current is FetchItemsSuccess,
@@ -204,7 +205,8 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 isSuccessful: true,
                 message: 'Successfully added',
               );
-            } else if (state is UpdateEmployeeSuccess) {
+            } else if (state is UpdateEmployeeSuccess ||
+                state is DeleteEmployeeSuccess) {
               context.read<EmployeeCubit>().getAllEmployee();
             }
           },
@@ -307,7 +309,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () {},
+                          onPressed: () =>
+                              context.read<EmployeeCubit>().deleteRecord(
+                                    employeeId: employees[index].employeeId,
+                                  ),
                         ),
                       ],
                     ),
@@ -317,6 +322,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
             ),
           ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton(
           onPressed: () => showDialogAddEdit(null),
           child: const Icon(Icons.add),
