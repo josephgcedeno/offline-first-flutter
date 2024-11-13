@@ -19,6 +19,14 @@ class EmployeeCubit extends Cubit<EmployeeState> {
       final List<EmployeeResponse> getLocalItems =
           await employeeRepository.fetchEmployees();
 
+      if (await employeeRepository.hasConnectivity) {
+        getLocalItems.sort(
+          (EmployeeResponse a, EmployeeResponse b) =>
+              DateTime.parse(a.updatedAt!)
+                  .compareTo(DateTime.parse(b.updatedAt!)),
+        );
+      }
+
       emit(FetchItemsSuccess(items: getLocalItems));
     } catch (_) {
       emit(FetchItemsFailed());
@@ -107,6 +115,7 @@ class EmployeeCubit extends Cubit<EmployeeState> {
             salary: item.salary,
             commissionPct: item.commissionPct,
             managerId: item.managerId,
+            updatedAt: '',
           ),
         ),
       );

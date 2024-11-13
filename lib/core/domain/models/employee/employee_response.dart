@@ -15,6 +15,7 @@ class EmployeeResponse {
     required this.salary,
     required this.commissionPct,
     required this.managerId,
+    this.updatedAt,
     this.createdDate,
     this.modifiedDate,
     this.action,
@@ -69,6 +70,8 @@ class EmployeeResponse {
   final double commissionPct;
   @JsonKey(name: 'MANAGER_ID')
   final int managerId;
+  @JsonKey(name: 'updatedAt')
+  final String? updatedAt;
 
   String? action;
   int? createdDate;
