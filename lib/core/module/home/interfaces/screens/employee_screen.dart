@@ -23,12 +23,6 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController employeeIdController =
-            employeeResponse != null
-                ? TextEditingController(
-                    text: employeeResponse.employeeId.toString(),
-                  )
-                : TextEditingController(text: '100');
         final TextEditingController firstNameController =
             employeeResponse != null
                 ? TextEditingController(text: employeeResponse.firstName)
@@ -70,12 +64,6 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                TextField(
-                  controller: employeeIdController,
-                  decoration: const InputDecoration(
-                    labelText: 'Employee ID',
-                  ),
-                ),
                 TextField(
                   controller: firstNameController,
                   decoration: const InputDecoration(
@@ -203,49 +191,56 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         ),
         BlocListener<HomeCubit, HomeState>(
           listenWhen: (HomeState previous, HomeState current) =>
+              current is FetchSyncDataLoading ||
+              current is FetchSyncDataSuccess ||
               current is ConnectivityChanges,
           listener: (BuildContext context, HomeState state) {
             if (state is ConnectivityChanges) {
-              setState(() {
-                if (state.connected) {
-                  item = Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(color: Colors.green),
-                    child: const Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          SyncingAnimation(),
-                          SizedBox(width: 5),
-                          Text(
-                            'Syncing',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
+              if (state.connected) {
+                context.read<HomeCubit>().syncDataWhenOnline();
+                item = null;
+              } else {
+                /// call sync function heree
+                item = Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(color: Colors.red),
+                  child: const Center(
+                    child: Text(
+                      'Offline',
+                      style: TextStyle(color: Colors.white),
                     ),
-                  );
-
-                  /// call sync function heree
-                } else {
-                  item = Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(color: Colors.red),
-                    child: const Center(
-                      child: Text(
-                        'Offline',
+                  ),
+                );
+              }
+              setState(() {});
+            } else if (state is FetchSyncDataLoading) {
+              item = Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(color: Colors.green),
+                child: const Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      SyncingAnimation(),
+                      SizedBox(width: 5),
+                      Text(
+                        'Syncing',
                         style: TextStyle(color: Colors.white),
                       ),
-                    ),
-                  );
-                }
+                    ],
+                  ),
+                ),
+              );
+              setState(() {});
+            } else if (state is FetchSyncDataSuccess) {
+              context.read<EmployeeCubit>().getAllEmployee();
+              setState(() {
+                item = null;
               });
-
-              Future<void>.delayed(
-                const Duration(seconds: 3),
-                () => setState(() {
-                  item = null;
-                }),
+              showSnackbar(
+                context,
+                isSuccessful: true,
+                message: 'Successfully synced record',
               );
             }
           },
@@ -253,6 +248,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       ],
       child: Scaffold(
         appBar: AppBar(
+          leading: GestureDetector(
+            onTap: () => context.read<HomeCubit>().syncDataWhenOnline(),
+            child: const Icon(Icons.sync),
+          ),
           title: const Text('Employee Management'),
         ),
         body: Column(

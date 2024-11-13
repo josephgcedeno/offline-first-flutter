@@ -11,7 +11,7 @@ class EmployeeCache {
 
   Future<void> saveToLocal(List<EmployeeResponse> response) async {
     /// truncate data
-    await truncateRecord();
+    await truncateRecord(employeesTable);
 
     for (int i = 0; i < response.length; i++) {
       await _insert(response[i]);
@@ -76,7 +76,7 @@ class EmployeeCache {
       orderBy: 'modifiedDate DESC',
     );
 
-    if (T is EmployeeResponse) {
+    if (T == EmployeeResponse) {
       return List<T>.generate(
         maps.length,
         (int i) => EmployeeResponse.fromJson(maps[i]) as T,
@@ -85,11 +85,11 @@ class EmployeeCache {
     return <T>[];
   }
 
-  Future<void> truncateRecord() async {
+  Future<void> truncateRecord(String table) async {
     final Database dbInstance = await databaseManager.instance;
 
     dbInstance.batch()
-      ..delete(employeesTable)
+      ..delete(table)
       ..commit(noResult: true);
   }
 }

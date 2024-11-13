@@ -62,7 +62,6 @@ class EmployeeRepository {
     bool syncing = false,
   }) async {
     http.Response? response;
-
     try {
       if (await hasConnectivity) {
         response = await http.post(
@@ -87,7 +86,7 @@ class EmployeeRepository {
       if (syncing) {
         throw APIErrorResponse.socketErrorResponse();
       }
-      
+
       employeeRequest.action = 'create';
       employeeRequest.synced = 0;
 
