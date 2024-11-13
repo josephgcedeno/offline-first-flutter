@@ -25,12 +25,7 @@ class EmployeeResponse {
   factory EmployeeResponse.fromJson(Map<String, dynamic> json) {
     final EmployeeResponse item = _$EmployeeResponseFromJson(json);
 
-    item.synced = item.action == null &&
-            item.modifiedDate == null &&
-            item.localId == null &&
-            item.createdDate == null
-        ? 1
-        : 0;
+    item.synced = item.localId == null ? 1 : 0;
     return item;
   }
 

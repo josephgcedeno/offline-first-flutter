@@ -41,13 +41,9 @@ class EmployeeRequest {
         'MANAGER_ID': managerId,
         'action': action,
         'createdDate': createdDate ?? DateTime.now().millisecondsSinceEpoch,
-        // Temporary assigin of local id
-        'localId': localId ??
-            (localId == null && action != 'create'
-                ? null
-                : DateTime.now().millisecondsSinceEpoch.toString()),
+        'localId': localId ?? DateTime.now().millisecondsSinceEpoch.toString(),
         'modifiedDate': DateTime.now().millisecondsSinceEpoch,
-        'synced': synced ?? 0,
+        'synced': localId != null ? 1 : 0,
       };
 
   @JsonKey(name: 'EMPLOYEE_ID')
