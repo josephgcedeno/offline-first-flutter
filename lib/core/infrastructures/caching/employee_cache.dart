@@ -51,8 +51,10 @@ class EmployeeCache {
     await dbInstance.update(
       employeesTable,
       item.toJsonInsertRecord(),
-      where: 'EMPLOYEE_ID = ?',
-      whereArgs: <int>[item.employeeId],
+      where: item.localId == null ? 'EMPLOYEE_ID = ?' : 'localId = ?',
+      whereArgs: <dynamic>[
+        if (item.localId == null) item.employeeId else item.localId!,
+      ],
     );
   }
 
