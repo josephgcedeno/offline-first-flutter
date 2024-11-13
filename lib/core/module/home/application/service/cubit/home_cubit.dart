@@ -44,7 +44,7 @@ class HomeCubit extends Cubit<HomeState> {
         .getUnsyncedData<EmployeeResponse>(table);
 
     if (res.isEmpty) return;
-    
+
     for (int i = 0; i < res.length; i++) {
       await employeeRepository.saveRecord(
         EmployeeRequest(
@@ -62,5 +62,7 @@ class HomeCubit extends Cubit<HomeState> {
         syncing: true,
       );
     }
+
+    await employeeRepository.employeeCache.truncateRecord(table);
   }
 }
