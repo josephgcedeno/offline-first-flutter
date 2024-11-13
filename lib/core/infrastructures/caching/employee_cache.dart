@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
+import 'package:flirt/core/domain/repository/secure_storage_repository.dart';
 import 'package:flirt/core/infrastructures/caching/database.dart';
 import 'package:flirt/core/infrastructures/caching/database_constant.dart';
+import 'package:flirt/core/infrastructures/repository/secure_storage_repository.dart';
+import 'package:flirt/internal/local_storage.dart';
 import 'package:sqflite/sqflite.dart';
 
 class EmployeeCache {
+  final ISecureStorageRepository _storage = SecureStorageRepository();
   final DatabaseManager databaseManager = DatabaseManager();
 
   Future<List<EmployeeResponse>> getItems() async => await _getLocalItems();
@@ -30,14 +36,19 @@ class EmployeeCache {
     );
   }
 
-  Future<void> insertSingleItem(EmployeeRequest item) async {
+  Future<void> insertSingleItem(
+    EmployeeRequest item, {
+    String table = employeesTable,
+  }) async {
     final Database dbInstance = await databaseManager.instance;
 
     await dbInstance.insert(
-      employeesTable,
+      table,
       item.toJsonInsertRecord(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
+    await setModifiedTable(table);
   }
 
   Future<void> updateItem(EmployeeRequest item) async {
@@ -59,6 +70,21 @@ class EmployeeCache {
       item.toJsonInsertRecord(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<void> setModifiedTable(String table) async {
+    final String modifieTables =
+        await _storage.read(key: lsModifiedTable) ?? '[]';
+    final List<String> items =
+        List<String>.from(jsonDecode(modifieTables) as List<dynamic>);
+
+    if (items.contains(table)) {
+      items.remove(table);
+    }
+
+    items.insert(0, table);
+
+    await _storage.write(key: lsModifiedTable, value: jsonEncode(items));
   }
 
   Future<void> truncateRecord() async {
