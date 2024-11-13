@@ -22,7 +22,7 @@ class EmployeeCache {
     final Database dbInstance = await databaseManager.instance;
 
     final List<Map<String, dynamic>> maps =
-        await dbInstance.query(employeesTable);
+        await dbInstance.query(employeesTable, where: 'action IS NOT "delete"');
 
     return List<EmployeeResponse>.generate(
       maps.length,
