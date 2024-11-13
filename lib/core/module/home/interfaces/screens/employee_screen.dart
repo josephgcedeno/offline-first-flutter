@@ -260,10 +260,15 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
               setState(() {
                 item = null;
               });
+
+              final int noActions = state.noActions;
+
               showSnackbar(
                 context,
                 isSuccessful: true,
-                message: 'Successfully synced record',
+                message: noActions != 0
+                    ? 'Successfully synced $noActions record.'
+                    : 'No action needed to sync.',
               );
             }
           },
