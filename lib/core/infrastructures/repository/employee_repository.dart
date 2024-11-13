@@ -57,7 +57,10 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> saveRecord(EmployeeRequest employeeRequest) async {
+  Future<void> saveRecord(
+    EmployeeRequest employeeRequest, {
+    bool syncing = false,
+  }) async {
     http.Response? response;
 
     try {
@@ -80,6 +83,11 @@ class EmployeeRepository {
         return;
       }
 
+      /// If error occured in syncing while there is no internet prevent saving it again to local storage
+      if (syncing) {
+        throw APIErrorResponse.socketErrorResponse();
+      }
+      
       employeeRequest.action = 'create';
       employeeRequest.synced = 0;
 

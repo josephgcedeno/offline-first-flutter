@@ -1,16 +1,10 @@
-import 'dart:convert';
-
 import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
-import 'package:flirt/core/domain/repository/secure_storage_repository.dart';
 import 'package:flirt/core/infrastructures/caching/database.dart';
 import 'package:flirt/core/infrastructures/caching/database_constant.dart';
-import 'package:flirt/core/infrastructures/repository/secure_storage_repository.dart';
-import 'package:flirt/internal/local_storage.dart';
 import 'package:sqflite/sqflite.dart';
 
 class EmployeeCache {
-  final ISecureStorageRepository _storage = SecureStorageRepository();
   final DatabaseManager databaseManager = DatabaseManager();
 
   Future<List<EmployeeResponse>> getItems() async => await _getLocalItems();
@@ -48,7 +42,7 @@ class EmployeeCache {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    await setModifiedTable(table);
+    await databaseManager.setModifiedTable(table);
   }
 
   Future<void> updateItem(EmployeeRequest item) async {
@@ -72,19 +66,23 @@ class EmployeeCache {
     );
   }
 
-  Future<void> setModifiedTable(String table) async {
-    final String modifieTables =
-        await _storage.read(key: lsModifiedTable) ?? '[]';
-    final List<String> items =
-        List<String>.from(jsonDecode(modifieTables) as List<dynamic>);
+  Future<List<T>> getUnsyncedData<T>(String table) async {
+    final Database dbInstance = await databaseManager.instance;
 
-    if (items.contains(table)) {
-      items.remove(table);
+    final List<Map<String, dynamic>> maps = await dbInstance.query(
+      table,
+      where: 'synced = ?',
+      whereArgs: <int>[0],
+      orderBy: 'modifiedDate DESC',
+    );
+
+    if (T is EmployeeResponse) {
+      return List<T>.generate(
+        maps.length,
+        (int i) => EmployeeResponse.fromJson(maps[i]) as T,
+      );
     }
-
-    items.insert(0, table);
-
-    await _storage.write(key: lsModifiedTable, value: jsonEncode(items));
+    return <T>[];
   }
 
   Future<void> truncateRecord() async {
