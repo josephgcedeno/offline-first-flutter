@@ -10,6 +10,9 @@ class EmployeeCache {
   Future<List<EmployeeResponse>> getItems() async => await _getLocalItems();
 
   Future<void> saveToLocal(List<EmployeeResponse> response) async {
+    /// truncate data
+    await truncateRecord();
+
     for (int i = 0; i < response.length; i++) {
       await _insert(response[i]);
     }

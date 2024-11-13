@@ -22,8 +22,12 @@ class EmployeeResponse {
     this.synced,
   });
 
-  factory EmployeeResponse.fromJson(Map<String, dynamic> json) =>
-      _$EmployeeResponseFromJson(json);
+  factory EmployeeResponse.fromJson(Map<String, dynamic> json) {
+    final EmployeeResponse item = _$EmployeeResponseFromJson(json);
+
+    item.synced = item.localId == null ? 1 : 0;
+    return item;
+  }
 
   Map<String, dynamic> toJson() => _$EmployeeResponseToJson(this);
 
