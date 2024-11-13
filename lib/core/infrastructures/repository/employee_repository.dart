@@ -148,7 +148,7 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> deleteRecord(EmployeeRequest employeeRequest) async {
+  Future<void> deleteRecord(int employeeId) async {
     http.Response? response;
 
     try {
@@ -156,7 +156,7 @@ class EmployeeRepository {
         response = await http.delete(
           Uri.https(
             'parse-baas-sample.onrender.com',
-            '/dummy/employee/${employeeRequest.employeeId}',
+            '/dummy/employee/$employeeId',
           ),
           headers: httpRequestHeaders,
         );
@@ -173,9 +173,9 @@ class EmployeeRepository {
         return;
       }
 
-      employeeRequest.action = 'delete';
-
-      return await employeeCache.updateItem(employeeRequest);
+      return await employeeCache.deleteItem(
+        employeeId.toString(),
+      );
     } on SocketException {
       throw APIErrorResponse.socketErrorResponse();
     } catch (e) {

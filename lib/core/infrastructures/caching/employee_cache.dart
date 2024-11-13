@@ -45,7 +45,10 @@ class EmployeeCache {
     await databaseManager.setModifiedTable(table);
   }
 
-  Future<void> updateItem(EmployeeRequest item) async {
+  Future<void> updateItem(
+    EmployeeRequest item, {
+    String table = employeesTable,
+  }) async {
     final Database dbInstance = await databaseManager.instance;
 
     await dbInstance.update(
@@ -56,6 +59,40 @@ class EmployeeCache {
         if (item.localId == null) item.employeeId else item.localId!,
       ],
     );
+
+    await databaseManager.setModifiedTable(table);
+  }
+
+  Future<void> deleteItem(
+    String employeeId, {
+    String table = employeesTable,
+  }) async {
+    final Database dbInstance = await databaseManager.instance;
+
+    final List<Map<String, dynamic>> maps = await dbInstance.query(
+      employeesTable,
+      where: 'EMPLOYEE_ID = $employeeId',
+    );
+    final Map<String, dynamic> item = Map<String, dynamic>.from(maps.first);
+    final String? localId = item['localId'] as String?;
+
+    /// If record from remote just update action to delete
+    if (localId == null) {
+      item.update('action', (_) => 'delete');
+      await dbInstance.update(
+        employeesTable,
+        item,
+        where: 'EMPLOYEE_ID = $employeeId',
+      );
+    } else {
+      /// If from local record, just simply delete it.
+      await dbInstance.delete(
+        employeesTable,
+        where: 'localId = $localId',
+      );
+    }
+
+    await databaseManager.setModifiedTable(table);
   }
 
   Future<int> _insert(EmployeeResponse item) async {
