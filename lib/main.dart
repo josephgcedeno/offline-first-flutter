@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flirt/configs/themes.dart';
 import 'package:flirt/core/infrastructures/repository/cat_repository.dart';
+import 'package:flirt/core/infrastructures/repository/employee_repository.dart';
 import 'package:flirt/core/infrastructures/repository/quote_repository.dart';
+import 'package:flirt/core/infrastructures/repository/secure_storage_repository.dart';
 import 'package:flirt/core/module/home/application/service/cubit/cat_cubit.dart';
+import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/quote_cubit.dart';
-import 'package:flirt/core/module/home/interfaces/screens/read_screen.dart';
+import 'package:flirt/core/module/home/interfaces/screens/employee_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,6 +27,8 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final EmployeeRepository employeeRepository = EmployeeRepository();
+
     return MultiBlocProvider(
       providers: <BlocProvider<dynamic>>[
         BlocProvider<QuoteCubit>(
@@ -37,7 +42,15 @@ class App extends StatelessWidget {
           ),
         ),
         BlocProvider<HomeCubit>(
-          create: (BuildContext context) => HomeCubit(),
+          create: (BuildContext context) => HomeCubit(
+            employeeRepository: employeeRepository,
+            storage: SecureStorageRepository(),
+          ),
+        ),
+        BlocProvider<EmployeeCubit>(
+          create: (BuildContext context) => EmployeeCubit(
+            employeeRepository: employeeRepository,
+          ),
         ),
       ],
       child: MaterialApp(
@@ -66,8 +79,12 @@ class _HomePageStateState extends State<_HomePageState> {
     _connectivitySubscription = _connectivity.onConnectivityChanged
         .listen((List<ConnectivityResult> result) {
       /// TODO: Improve solution for checks initial unnecessary emits
-      if (counter <= 1) {
+      if (counter <= 0) {
         counter++;
+
+        final bool isConnected = result.last != ConnectivityResult.none;
+        if (!mounted || isConnected) return;
+        context.read<HomeCubit>().connectivityChange(isConnected);
         return;
       }
       final bool isConnected = result.last != ConnectivityResult.none;
@@ -92,6 +109,6 @@ class _HomePageStateState extends State<_HomePageState> {
 
   @override
   Widget build(BuildContext context) {
-    return const ReadScreen();
+    return const EmployeeScreen();
   }
 }

@@ -1,75 +1,98 @@
-import 'package:flirt/core/infrastructures/repository/local_repository.dart';
+import 'dart:convert';
+
+import 'package:flirt/core/domain/models/employee/employee_request.dart';
+import 'package:flirt/core/domain/models/employee/employee_response.dart';
+import 'package:flirt/core/domain/repository/secure_storage_repository.dart';
+import 'package:flirt/core/infrastructures/repository/employee_repository.dart';
+import 'package:flirt/internal/local_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit() : super(HomeState());
+  HomeCubit({
+    required this.storage,
+    required this.employeeRepository,
+  }) : super(HomeState());
+  final EmployeeRepository employeeRepository;
+  final ISecureStorageRepository storage;
 
   void connectivityChange(bool connected) =>
       emit(ConnectivityChanges(connected: connected));
-  // Future<void> getAllData() async {
-  //   emit(FetchItemsLoading());
-  //   try {
-  //     final List<Item> getLocalItems = await workOrderRepository.getItems();
-
-  //     emit(FetchItemsSuccess(items: getLocalItems));
-  //   } catch (_) {
-  //     emit(FetchItemsFailed());
-  //   }
-  // }
-
-  Future<void> addData(Item item) async {
-    // emit(AddItemsLoading());
-    // try {
-    //   if (localRepository.database == null) {
-    //     await localRepository.open();
-    //   }
-
-    //   if (await hasConnectivity) {
-    //     item.isSync = true;
-    //     await workOrderRepository.addData(item);
-    //   }
-
-    //   await localRepository.insert(item);
-
-    //   emit(AddItemsSuccess(item: item));
-    // } catch (_) {
-    //   emit(AddItemsFailed());
-    // }
-  }
-
-  // Future<List<Item>> getLocalItems() async {
-  //   if (localRepository.database == null) {
-  //     await localRepository.open();
-  //   }
-  //   final List<Item> res = await localRepository.getItems();
-
-  //   return res;
-  // }
 
   Future<void> syncDataWhenOnline() async {
-    // final List<Item> res = await localRepository.getUnsyncedItems();
+    emit(FetchSyncDataLoading());
+    try {
+      final String modifieTables =
+          await storage.read(key: lsModifiedTable) ?? '[]';
+      final List<String> items =
+          List<String>.from(jsonDecode(modifieTables) as List<dynamic>);
 
-    // if (res.isEmpty) return;
+      int totalActions = 0;
 
-    // if (localRepository.database == null) {
-    //   await localRepository.open();
-    // }
+      for (int i = 0; i < items.length; i++) {
+        final int noActions = await _syncEmployeeRecords(items[i]);
 
-    // for (int i = 0; i < res.length; i++) {
-    //   res[i].isSync = true;
+        totalActions += noActions;
+      }
 
-    //   await remoteRepository.addData(res[i]);
-    //   await localRepository.update(res[i]);
-    // }
-
-    // final List<Item> responseSyncedData = await getLocalItems();
-
-    // emit(FetchSyncDataSuccess(items: responseSyncedData));
+      emit(FetchSyncDataSuccess(noActions: totalActions));
+    } catch (e) {
+      emit(FetchSyncDataFailed());
+    }
   }
 
-  Future<void> deleteAllLocalDB() async {
-    // await localRepository.clearAllItems();
+  Future<int> _syncEmployeeRecords(String table) async {
+    final List<EmployeeResponse> res = await employeeRepository.employeeCache
+        .getUnsyncedData<EmployeeResponse>(table);
+
+    if (res.isEmpty) return 0;
+
+    for (int i = 0; i < res.length; i++) {
+      final EmployeeResponse item = res[i];
+      if (item.action == 'create') {
+        await employeeRepository.saveRecord(
+          EmployeeRequest(
+            employeeId: item.employeeId,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            hireDate: item.hireDate,
+            jobId: item.jobId,
+            salary: item.salary,
+            commissionPct: item.commissionPct,
+            managerId: item.managerId,
+          ),
+          syncing: true,
+        );
+      } else if (item.action == 'update') {
+        await employeeRepository.updateRecord(
+          EmployeeRequest(
+            employeeId: item.employeeId,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            hireDate: item.hireDate,
+            jobId: item.jobId,
+            salary: item.salary,
+            commissionPct: item.commissionPct,
+            managerId: item.managerId,
+          ),
+          syncing: true,
+        );
+      } else if (item.action == 'delete') {
+        await employeeRepository.deleteRecord(
+          item.employeeId,
+          syncing: true,
+        );
+      }
+    }
+
+    if (!await employeeRepository.hasConnectivity) return res.length;
+    await employeeRepository.employeeCache.truncateRecord(table);
+
+    return res.length;
   }
 }
