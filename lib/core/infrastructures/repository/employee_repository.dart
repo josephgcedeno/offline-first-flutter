@@ -134,10 +134,6 @@ class EmployeeRepository {
         throw APIErrorResponse.socketErrorResponse();
       }
 
-      /// When local id is just null, meaning that the record is not on the remote, we could simply use the default value of it.
-      employeeRequest.action =
-          employeeRequest.localId != null ? employeeRequest.action : 'update';
-
       return await employeeCache.updateItem(employeeRequest);
     } on SocketException {
       throw APIErrorResponse.socketErrorResponse();

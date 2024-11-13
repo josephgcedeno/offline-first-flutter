@@ -36,6 +36,8 @@ class EmployeeCache {
   }) async {
     final Database dbInstance = await databaseManager.instance;
 
+    item.localId = DateTime.now().millisecondsSinceEpoch.toString();
+
     await dbInstance.insert(
       table,
       item.toJsonInsertRecord(),
@@ -50,6 +52,9 @@ class EmployeeCache {
     String table = employeesTable,
   }) async {
     final Database dbInstance = await databaseManager.instance;
+
+    /// When local id is just null, meaning that the record is not on the remote, we could simply use the default value of it.
+    item.action = item.localId != null ? item.action : 'update';
 
     await dbInstance.update(
       employeesTable,

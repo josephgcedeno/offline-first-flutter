@@ -27,8 +27,7 @@ class EmployeeRequest {
 
   Map<String, dynamic> toJson() => _$EmployeeRequestToJson(this);
 
-  Map<String, dynamic> toJsonInsertRecord({bool updating = false}) =>
-      <String, dynamic>{
+  Map<String, dynamic> toJsonInsertRecord() => <String, dynamic>{
         'EMPLOYEE_ID': employeeId,
         'FIRST_NAME': firstName,
         'LAST_NAME': lastName,
@@ -41,7 +40,7 @@ class EmployeeRequest {
         'MANAGER_ID': managerId,
         'action': action,
         'createdDate': createdDate ?? DateTime.now().millisecondsSinceEpoch,
-        'localId': localId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        'localId': localId,
         'modifiedDate': DateTime.now().millisecondsSinceEpoch,
         'synced': localId != null ? 1 : 0,
       };
