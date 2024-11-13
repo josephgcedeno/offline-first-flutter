@@ -148,7 +148,10 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> deleteRecord(int employeeId) async {
+  Future<void> deleteRecord(
+    int employeeId, {
+    bool syncing = false,
+  }) async {
     http.Response? response;
 
     try {
@@ -171,6 +174,11 @@ class EmployeeRepository {
           );
         }
         return;
+      }
+
+      /// If error occured in syncing while there is no internet prevent saving it again to local storage
+      if (syncing) {
+        throw APIErrorResponse.socketErrorResponse();
       }
 
       return await employeeCache.deleteItem(

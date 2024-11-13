@@ -81,9 +81,14 @@ class HomeCubit extends Cubit<HomeState> {
           ),
           syncing: true,
         );
+      } else if (item.action == 'delete') {
+        await employeeRepository.deleteRecord(
+          item.employeeId,
+          syncing: true,
+        );
       }
     }
-
+    if (!await employeeRepository.hasConnectivity) return;
     await employeeRepository.employeeCache.truncateRecord(table);
   }
 }
