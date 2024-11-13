@@ -100,7 +100,10 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> updateRecord(EmployeeRequest employeeRequest) async {
+  Future<void> updateRecord(
+    EmployeeRequest employeeRequest, {
+    bool syncing = false,
+  }) async {
     http.Response? response;
 
     try {
@@ -126,7 +129,14 @@ class EmployeeRepository {
         return;
       }
 
-      employeeRequest.action = 'update';
+      /// If error occured in syncing while there is no internet prevent saving it again to local storage
+      if (syncing) {
+        throw APIErrorResponse.socketErrorResponse();
+      }
+
+      /// When local id is just null, meaning that the record is not on the remote, we could simply use the default value of it.
+      employeeRequest.action =
+          employeeRequest.localId != null ? employeeRequest.action : 'update';
 
       return await employeeCache.updateItem(employeeRequest);
     } on SocketException {

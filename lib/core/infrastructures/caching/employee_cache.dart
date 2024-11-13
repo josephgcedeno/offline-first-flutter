@@ -73,8 +73,7 @@ class EmployeeCache {
 
     final List<Map<String, dynamic>> maps = await dbInstance.query(
       table,
-      where: 'synced = ?',
-      whereArgs: <int>[0],
+      where: 'synced = 0 OR action IS NOT NULL',
       orderBy: 'modifiedDate DESC',
     );
 
