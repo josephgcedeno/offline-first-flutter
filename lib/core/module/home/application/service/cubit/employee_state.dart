@@ -32,8 +32,8 @@ class UpdateEmployeeSuccess extends EmployeeState {
 
 class UpdateEmployeeFailed extends EmployeeState {}
 
-class ClearLocalEmployeeLoading extends EmployeeState {}
+class DeleteEmployeeLoading extends EmployeeState {}
 
-class ClearLocalEmployeeSuccess extends EmployeeState {}
+class DeleteEmployeeSuccess extends EmployeeState {}
 
-class ClearLocalEmployeeFailed extends EmployeeState {}
+class DeleteEmployeeFailed extends EmployeeState {}

@@ -114,4 +114,17 @@ class EmployeeCubit extends Cubit<EmployeeState> {
       emit(UpdateEmployeeFailed());
     }
   }
+
+  Future<void> deleteRecord({
+    required int employeeId,
+  }) async {
+    emit(DeleteEmployeeLoading());
+    try {
+      await employeeRepository.deleteRecord(employeeId);
+
+      emit(DeleteEmployeeSuccess());
+    } catch (_) {
+      emit(DeleteEmployeeFailed());
+    }
+  }
 }
