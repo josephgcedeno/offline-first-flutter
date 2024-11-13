@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
@@ -43,24 +44,44 @@ class HomeCubit extends Cubit<HomeState> {
     final List<EmployeeResponse> res = await employeeRepository.employeeCache
         .getUnsyncedData<EmployeeResponse>(table);
 
+    inspect(res);
     if (res.isEmpty) return;
 
     for (int i = 0; i < res.length; i++) {
-      await employeeRepository.saveRecord(
-        EmployeeRequest(
-          employeeId: res[i].employeeId,
-          firstName: res[i].firstName,
-          lastName: res[i].lastName,
-          email: res[i].email,
-          phoneNumber: res[i].phoneNumber,
-          hireDate: res[i].hireDate,
-          jobId: res[i].jobId,
-          salary: res[i].salary,
-          commissionPct: res[i].commissionPct,
-          managerId: res[i].managerId,
-        ),
-        syncing: true,
-      );
+      final EmployeeResponse item = res[i];
+      if (item.action == 'create') {
+        await employeeRepository.saveRecord(
+          EmployeeRequest(
+            employeeId: item.employeeId,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            hireDate: item.hireDate,
+            jobId: item.jobId,
+            salary: item.salary,
+            commissionPct: item.commissionPct,
+            managerId: item.managerId,
+          ),
+          syncing: true,
+        );
+      } else if (item.action == 'update') {
+        await employeeRepository.updateRecord(
+          EmployeeRequest(
+            employeeId: item.employeeId,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            hireDate: item.hireDate,
+            jobId: item.jobId,
+            salary: item.salary,
+            commissionPct: item.commissionPct,
+            managerId: item.managerId,
+          ),
+          syncing: true,
+        );
+      }
     }
 
     await employeeRepository.employeeCache.truncateRecord(table);
