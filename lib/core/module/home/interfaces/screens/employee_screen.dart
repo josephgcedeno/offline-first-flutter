@@ -147,6 +147,22 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                   return;
                 }
 
+                context.read<EmployeeCubit>().updateRecord(
+                      firstName: firstNameController.text,
+                      lastName: lastNameController.text,
+                      email: emailController.text,
+                      phoneNumber: phoneNumberController.text,
+                      hireDate: hireDateController.text,
+                      jobId: jobIdController.text,
+                      salary: double.parse(salaryController.text),
+                      commissionPct: double.parse(commissionPctController.text),
+                      managerId: int.parse(managerIdController.text),
+                      employeeId: employeeResponse.employeeId,
+                      localId: employeeResponse.localId,
+                      action: employeeResponse.action,
+                      createdDate: employeeResponse.createdDate,
+                    );
+
                 Navigator.of(context).pop();
               },
             ),
@@ -168,7 +184,9 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       listeners: <BlocListener<dynamic, dynamic>>[
         BlocListener<EmployeeCubit, EmployeeState>(
           listenWhen: (EmployeeState previous, EmployeeState current) =>
-              current is SaveEmployeeSuccess || current is FetchItemsSuccess,
+              current is UpdateEmployeeSuccess ||
+              current is SaveEmployeeSuccess ||
+              current is FetchItemsSuccess,
           listener: (BuildContext context, EmployeeState state) {
             if (state is FetchItemsSuccess) {
               setState(() {
@@ -186,6 +204,8 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 isSuccessful: true,
                 message: 'Successfully added',
               );
+            } else if (state is UpdateEmployeeSuccess) {
+              context.read<EmployeeCubit>().getAllEmployee();
             }
           },
         ),
@@ -234,6 +254,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
               setState(() {});
             } else if (state is FetchSyncDataSuccess) {
               context.read<EmployeeCubit>().getAllEmployee();
+
               setState(() {
                 item = null;
               });
