@@ -10,7 +10,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'home_state.dart';
 
+/// HomeCubit is a Cubit that manages the state of the home screen.
+/// It handles connectivity changes and data synchronization.
 class HomeCubit extends Cubit<HomeState> {
+  /// Constructor for HomeCubit.
+  ///
+  /// [storage] An instance of ISecureStorageRepository for secure storage operations.
+  /// [employeeRepository] An instance of EmployeeRepository for employee data operations.
   HomeCubit({
     required this.storage,
     required this.employeeRepository,
@@ -18,9 +24,14 @@ class HomeCubit extends Cubit<HomeState> {
   final EmployeeRepository employeeRepository;
   final ISecureStorageRepository storage;
 
+  /// Emits a state change based on connectivity status.
+  ///
+  /// [connected] A boolean indicating the current connectivity status.
   void connectivityChange(bool connected) =>
       emit(ConnectivityChanges(connected: connected));
 
+  /// Initiates data synchronization when the device is online.
+  /// This function fetches modified tables, syncs employee records, and updates the state accordingly.
   Future<void> syncDataWhenOnline() async {
     emit(FetchSyncDataLoading());
     try {
@@ -43,6 +54,10 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
+  /// Syncs employee records for a given table.
+  ///
+  /// [table] The name of the table to sync records from.
+  /// Returns The number of actions performed during the sync process.
   Future<int> _syncEmployeeRecords(String table) async {
     try {
       final List<EmployeeResponse> res = await employeeRepository.employeeCache
