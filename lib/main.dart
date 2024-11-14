@@ -2,14 +2,10 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flirt/configs/themes.dart';
-import 'package:flirt/core/infrastructures/repository/cat_repository.dart';
 import 'package:flirt/core/infrastructures/repository/employee_repository.dart';
-import 'package:flirt/core/infrastructures/repository/quote_repository.dart';
 import 'package:flirt/core/infrastructures/repository/secure_storage_repository.dart';
-import 'package:flirt/core/module/home/application/service/cubit/cat_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
-import 'package:flirt/core/module/home/application/service/cubit/quote_cubit.dart';
 import 'package:flirt/core/module/home/interfaces/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,16 +27,6 @@ class App extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: <BlocProvider<dynamic>>[
-        BlocProvider<QuoteCubit>(
-          create: (BuildContext context) => QuoteCubit(
-            quoteRepository: QuoteRepository(),
-          ),
-        ),
-        BlocProvider<CatCubit>(
-          create: (BuildContext context) => CatCubit(
-            catRepository: CatRepository(),
-          ),
-        ),
         BlocProvider<HomeCubit>(
           create: (BuildContext context) => HomeCubit(
             employeeRepository: employeeRepository,
@@ -71,27 +57,26 @@ class _HomePageState extends StatefulWidget {
 }
 
 class _HomePageStateState extends State<_HomePageState> {
-  final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-  int counter = 0;
 
   void startMonitoringConnectivity() {
-    _connectivitySubscription = _connectivity.onConnectivityChanged
-        .listen((List<ConnectivityResult> result) {
-      /// TODO: Improve solution for checks initial unnecessary emits
-      if (counter <= 0) {
-        counter++;
+    final Connectivity connectivity = Connectivity();
 
-        final bool isConnected = result.last != ConnectivityResult.none;
-        if (!mounted || isConnected) return;
-        context.read<HomeCubit>().connectivityChange(isConnected);
-        return;
-      }
+    // Add a boolean flag to track the first connectivity change event
+    bool isFirstEvent = true;
+
+    _connectivitySubscription = connectivity.onConnectivityChanged
+        .listen((List<ConnectivityResult> result) {
+      // Determine connectivity status
       final bool isConnected = result.last != ConnectivityResult.none;
 
       if (!mounted) return;
+      if (isFirstEvent && !isConnected) {
+        isFirstEvent = false;
+      }
+
+      // Notify the HomeCubit only when there is a connectivity change
       context.read<HomeCubit>().connectivityChange(isConnected);
-      return;
     });
   }
 
