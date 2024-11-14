@@ -10,7 +10,7 @@ import 'package:flirt/core/module/home/application/service/cubit/cat_cubit.dart'
 import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/quote_cubit.dart';
-import 'package:flirt/core/module/home/interfaces/screens/employee_screen.dart';
+import 'package:flirt/core/module/home/interfaces/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -109,6 +109,6 @@ class _HomePageStateState extends State<_HomePageState> {
 
   @override
   Widget build(BuildContext context) {
-    return const EmployeeScreen();
+    return const HomeScreen();
   }
 }
