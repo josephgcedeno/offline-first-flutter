@@ -4,6 +4,7 @@ import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
 import 'package:flirt/core/domain/repository/secure_storage_repository.dart';
 import 'package:flirt/core/infrastructures/repository/employee_repository.dart';
+import 'package:flirt/internal/enums.dart';
 import 'package:flirt/internal/local_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -50,43 +51,46 @@ class HomeCubit extends Cubit<HomeState> {
 
     for (int i = 0; i < res.length; i++) {
       final EmployeeResponse item = res[i];
-      if (item.action == 'create') {
-        await employeeRepository.saveRecord(
-          EmployeeRequest(
-            employeeId: item.employeeId,
-            firstName: item.firstName,
-            lastName: item.lastName,
-            email: item.email,
-            phoneNumber: item.phoneNumber,
-            hireDate: item.hireDate,
-            jobId: item.jobId,
-            salary: item.salary,
-            commissionPct: item.commissionPct,
-            managerId: item.managerId,
-          ),
-          syncing: true,
-        );
-      } else if (item.action == 'update') {
-        await employeeRepository.updateRecord(
-          EmployeeRequest(
-            employeeId: item.employeeId,
-            firstName: item.firstName,
-            lastName: item.lastName,
-            email: item.email,
-            phoneNumber: item.phoneNumber,
-            hireDate: item.hireDate,
-            jobId: item.jobId,
-            salary: item.salary,
-            commissionPct: item.commissionPct,
-            managerId: item.managerId,
-          ),
-          syncing: true,
-        );
-      } else if (item.action == 'delete') {
-        await employeeRepository.deleteRecord(
-          item.employeeId,
-          syncing: true,
-        );
+
+      switch (item.action) {
+        case Action.create:
+          await employeeRepository.saveRecord(
+            EmployeeRequest(
+              employeeId: item.employeeId,
+              firstName: item.firstName,
+              lastName: item.lastName,
+              email: item.email,
+              phoneNumber: item.phoneNumber,
+              hireDate: item.hireDate,
+              jobId: item.jobId,
+              salary: item.salary,
+              commissionPct: item.commissionPct,
+              managerId: item.managerId,
+            ),
+            syncing: true,
+          );
+        case Action.update:
+          await employeeRepository.updateRecord(
+            EmployeeRequest(
+              employeeId: item.employeeId,
+              firstName: item.firstName,
+              lastName: item.lastName,
+              email: item.email,
+              phoneNumber: item.phoneNumber,
+              hireDate: item.hireDate,
+              jobId: item.jobId,
+              salary: item.salary,
+              commissionPct: item.commissionPct,
+              managerId: item.managerId,
+            ),
+            syncing: true,
+          );
+        case Action.delete:
+          await employeeRepository.deleteRecord(
+            item.employeeId,
+            syncing: true,
+          );
+        default:
       }
     }
 

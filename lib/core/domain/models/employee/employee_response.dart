@@ -1,3 +1,4 @@
+import 'package:flirt/internal/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'employee_response.g.dart';
@@ -73,7 +74,7 @@ class EmployeeResponse {
   @JsonKey(name: 'updatedAt')
   final String? updatedAt;
 
-  String? action;
+  Action? action;
   int? createdDate;
   String? localId;
   int? modifiedDate;

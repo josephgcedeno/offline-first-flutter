@@ -158,9 +158,6 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                       commissionPct: double.parse(commissionPctController.text),
                       managerId: int.parse(managerIdController.text),
                       employeeId: employeeResponse.employeeId,
-                      localId: employeeResponse.localId,
-                      action: employeeResponse.action,
-                      createdDate: employeeResponse.createdDate,
                     );
 
                 Navigator.of(context).pop();

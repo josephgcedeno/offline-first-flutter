@@ -87,9 +87,6 @@ class EmployeeRepository {
         throw APIErrorResponse.socketErrorResponse();
       }
 
-      employeeRequest.action = 'create';
-      employeeRequest.synced = 0;
-
       return await employeeCache.insertSingleItem(employeeRequest);
     } on SocketException {
       throw APIErrorResponse.socketErrorResponse();

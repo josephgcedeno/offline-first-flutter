@@ -78,9 +78,6 @@ class EmployeeCubit extends Cubit<EmployeeState> {
     required double commissionPct,
     required int managerId,
     required int employeeId,
-    String? localId,
-    String? action,
-    int? createdDate,
   }) async {
     emit(UpdateEmployeeLoading());
     try {
@@ -95,9 +92,6 @@ class EmployeeCubit extends Cubit<EmployeeState> {
         salary: salary,
         commissionPct: commissionPct,
         managerId: managerId,
-        localId: localId,
-        action: action,
-        createdDate: createdDate,
       );
 
       await employeeRepository.updateRecord(item);
