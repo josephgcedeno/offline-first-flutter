@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flirt/internal/enums.dart' as enums;
 import 'package:flutter/material.dart';
 
 /// Triggers a snackbar notification based on user parameters
@@ -72,3 +73,20 @@ String _getFunctionName(StackTrace stacktrace) {
   final String functionName = traceString.split(' ').reversed.elementAt(1);
   return functionName;
 }
+
+/// Converts a string to an Action enum.
+///
+/// [actionString] The string to be converted.
+///
+/// Returns the corresponding Action enum.
+enums.Action stringToAction(String actionString) =>
+    enums.Action.values.firstWhere(
+      (enums.Action action) => action.name == actionString,
+    );
+
+/// Converts an Action enum to a string.
+///
+/// [action] The Action enum to be converted.
+///
+/// Returns the corresponding string.
+String actionToString(enums.Action action) => action.name;

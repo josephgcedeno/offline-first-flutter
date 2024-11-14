@@ -1,3 +1,4 @@
+import 'package:flirt/internal/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'employee_request.g.dart';
@@ -38,7 +39,7 @@ class EmployeeRequest {
         'SALARY': salary,
         'COMMISSION_PCT': commissionPct,
         'MANAGER_ID': managerId,
-        'action': action,
+        'action': action?.name,
         'createdDate': createdDate ?? DateTime.now().millisecondsSinceEpoch,
         'localId': localId,
         'modifiedDate': DateTime.now().millisecondsSinceEpoch,
@@ -66,7 +67,7 @@ class EmployeeRequest {
   @JsonKey(name: 'MANAGER_ID')
   final int managerId;
 
-  String? action;
+  Action? action;
   int? createdDate;
   String? localId;
   int? modifiedDate;

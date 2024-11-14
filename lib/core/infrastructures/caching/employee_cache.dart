@@ -2,6 +2,8 @@ import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
 import 'package:flirt/core/infrastructures/caching/database.dart';
 import 'package:flirt/core/infrastructures/caching/database_constant.dart';
+import 'package:flirt/internal/enums.dart';
+import 'package:flirt/internal/utils.dart';
 import 'package:sqflite/sqflite.dart';
 
 class EmployeeCache {
@@ -37,6 +39,8 @@ class EmployeeCache {
     final Database dbInstance = await databaseManager.instance;
 
     item.localId = DateTime.now().millisecondsSinceEpoch.toString();
+    item.action = Action.create;
+    item.synced = 0;
 
     await dbInstance.insert(
       table,
@@ -53,8 +57,25 @@ class EmployeeCache {
   }) async {
     final Database dbInstance = await databaseManager.instance;
 
+    final List<Map<String, dynamic>> maps = await dbInstance.query(
+      employeesTable,
+      where: 'EMPLOYEE_ID = ${item.employeeId}',
+    );
+
+    final Map<String, dynamic> itemFromDb =
+        Map<String, dynamic>.from(maps.first);
+
+    final String? localId = itemFromDb['localId'] as String?;
+    final String? action = itemFromDb['action'] as String?;
+
     /// When local id is just null, meaning that the record is not on the remote, we could simply use the default value of it.
-    item.action = item.localId != null ? item.action : 'update';
+    item.action = localId != null && action != null
+        ? stringToAction(action)
+        : Action.update;
+
+    item.localId = localId;
+    item.createdDate = itemFromDb['createdDate'] as int?;
+    item.modifiedDate = itemFromDb['modifiedDate'] as int?;
 
     await dbInstance.update(
       employeesTable,

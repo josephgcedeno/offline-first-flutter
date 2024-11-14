@@ -13,6 +13,8 @@ class EmployeeCubit extends Cubit<EmployeeState> {
   }) : super(EmployeeState());
   final EmployeeRepository employeeRepository;
 
+  /// Fetches all employees from the repository.
+  /// Emits [FetchItemsLoading], [FetchItemsSuccess], or [FetchItemsFailed].
   Future<void> getAllEmployee() async {
     emit(FetchItemsLoading());
     try {
@@ -33,6 +35,19 @@ class EmployeeCubit extends Cubit<EmployeeState> {
     }
   }
 
+  /// Saves a new employee record.
+  ///
+  /// [firstName]: The first name of the employee.
+  /// [lastName]: The last name of the employee.
+  /// [email]: The email address of the employee.
+  /// [phoneNumber]: The phone number of the employee.
+  /// [hireDate]: The hire date of the employee.
+  /// [jobId]: The job ID of the employee.
+  /// [salary]: The salary of the employee.
+  /// [commissionPct]: The commission percentage of the employee.
+  /// [managerId]: The ID of the employee's manager.
+  ///
+  /// Emits [SaveEmployeeLoading], [SaveEmployeeSuccess], or [SaveEmployeeFailed].
   Future<void> saveRecord({
     required String firstName,
     required String lastName,
@@ -67,6 +82,20 @@ class EmployeeCubit extends Cubit<EmployeeState> {
     }
   }
 
+  /// Updates an existing employee record.
+  ///
+  /// [firstName]: The first name of the employee.
+  /// [lastName]: The last name of the employee.
+  /// [email]: The email address of the employee.
+  /// [phoneNumber]: The phone number of the employee.
+  /// [hireDate]: The hire date of the employee.
+  /// [jobId]: The job ID of the employee.
+  /// [salary]: The salary of the employee.
+  /// [commissionPct]: The commission percentage of the employee.
+  /// [managerId]: The ID of the employee's manager.
+  /// [employeeId]: The ID of the employee to be updated.
+  ///
+  /// Emits [UpdateEmployeeLoading], [UpdateEmployeeSuccess], or [UpdateEmployeeFailed].
   Future<void> updateRecord({
     required String firstName,
     required String lastName,
@@ -78,9 +107,6 @@ class EmployeeCubit extends Cubit<EmployeeState> {
     required double commissionPct,
     required int managerId,
     required int employeeId,
-    String? localId,
-    String? action,
-    int? createdDate,
   }) async {
     emit(UpdateEmployeeLoading());
     try {
@@ -95,9 +121,6 @@ class EmployeeCubit extends Cubit<EmployeeState> {
         salary: salary,
         commissionPct: commissionPct,
         managerId: managerId,
-        localId: localId,
-        action: action,
-        createdDate: createdDate,
       );
 
       await employeeRepository.updateRecord(item);
@@ -124,6 +147,11 @@ class EmployeeCubit extends Cubit<EmployeeState> {
     }
   }
 
+  /// Deletes an employee record.
+  ///
+  /// [employeeId]: The ID of the employee to be deleted.
+  ///
+  /// Emits [DeleteEmployeeLoading], [DeleteEmployeeSuccess], or [DeleteEmployeeFailed].
   Future<void> deleteRecord({
     required int employeeId,
   }) async {
