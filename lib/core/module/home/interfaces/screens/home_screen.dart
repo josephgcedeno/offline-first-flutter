@@ -1,9 +1,7 @@
-import 'dart:developer';
-
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
 import 'package:flirt/core/interfaces/screens/controller_screen.dart';
 import 'package:flirt/core/interfaces/widgets/modify_employee_dialog.dart';
-import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
+import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
 import 'package:flirt/internal/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,42 +15,54 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<EmployeeResponse> employees = <EmployeeResponse>[];
-  Widget? item;
 
   @override
   void initState() {
     super.initState();
-    context.read<EmployeeCubit>().getAllEmployee();
+    context.read<HomeCubit>().getAllEmployees();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<EmployeeCubit, EmployeeState>(
-      listenWhen: (EmployeeState previous, EmployeeState current) =>
+    return BlocListener<HomeCubit, HomeState>(
+      listenWhen: (HomeState previous, HomeState current) =>
           current is DeleteEmployeeSuccess ||
           current is UpdateEmployeeSuccess ||
-          current is SaveEmployeeSuccess ||
-          current is FetchItemsSuccess,
-      listener: (BuildContext context, EmployeeState state) {
-        if (state is FetchItemsSuccess) {
+          current is CreateEmployeeSuccess ||
+          current is FetchEmployeesSuccess,
+      listener: (BuildContext context, HomeState state) {
+        if (state is FetchEmployeesSuccess) {
           setState(() {
-            /// Clear if record is already filled for mocking real time
+            /// Clear if record is not empty to 'refresh' data
             if (employees.isNotEmpty) employees.clear();
 
             employees.addAll(state.items);
-            inspect(employees);
           });
-        } else if (state is SaveEmployeeSuccess) {
-          context.read<EmployeeCubit>().getAllEmployee();
-
-          showSnackbar(
-            context,
-            isSuccessful: true,
-            message: 'Successfully added',
-          );
-        } else if (state is UpdateEmployeeSuccess ||
+        } else if (state is CreateEmployeeSuccess ||
+            state is UpdateEmployeeSuccess ||
             state is DeleteEmployeeSuccess) {
-          context.read<EmployeeCubit>().getAllEmployee();
+          context.read<HomeCubit>().getAllEmployees();
+
+          switch (state) {
+            case CreateEmployeeSuccess():
+              showSnackbar(
+                context,
+                isSuccessful: true,
+                message: 'Successfully added employees',
+              );
+            case UpdateEmployeeSuccess():
+              showSnackbar(
+                context,
+                isSuccessful: true,
+                message: 'Successfully updated employee',
+              );
+            case DeleteEmployeeSuccess():
+              showSnackbar(
+                context,
+                isSuccessful: true,
+                message: 'Successfully deleted employee',
+              );
+          }
         }
       },
       child: ControllerScreen(
@@ -74,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => context.read<EmployeeCubit>().deleteRecord(
+                    onPressed: () => context.read<HomeCubit>().deleteRecord(
                           employeeId: employees[index].employeeId,
                         ),
                   ),

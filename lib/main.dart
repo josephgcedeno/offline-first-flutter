@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flirt/configs/themes.dart';
+import 'package:flirt/core/application/service/cubit/sync_cubit.dart';
 import 'package:flirt/core/infrastructures/repository/employee_repository.dart';
 import 'package:flirt/core/infrastructures/repository/secure_storage_repository.dart';
-import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
 import 'package:flirt/core/module/home/interfaces/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -27,14 +27,14 @@ class App extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: <BlocProvider<dynamic>>[
-        BlocProvider<HomeCubit>(
-          create: (BuildContext context) => HomeCubit(
+        BlocProvider<SyncCubit>(
+          create: (BuildContext context) => SyncCubit(
             employeeRepository: employeeRepository,
             storage: SecureStorageRepository(),
           ),
         ),
-        BlocProvider<EmployeeCubit>(
-          create: (BuildContext context) => EmployeeCubit(
+        BlocProvider<HomeCubit>(
+          create: (BuildContext context) => HomeCubit(
             employeeRepository: employeeRepository,
           ),
         ),
@@ -75,8 +75,8 @@ class _HomePageStateState extends State<_HomePageState> {
         isFirstEvent = false;
       }
 
-      // Notify the HomeCubit only when there is a connectivity change
-      context.read<HomeCubit>().connectivityChange(isConnected);
+      // Notify the Sync Cubit only when there is a connectivity change
+      context.read<SyncCubit>().updateConnectivityStatus(isConnected);
     });
   }
 

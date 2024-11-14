@@ -1,5 +1,5 @@
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
-import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
+import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -119,7 +119,7 @@ void showDialogAddEdit(
               child: const Text('Save'),
               onPressed: () {
                 if (employeeResponse == null) {
-                  context.read<EmployeeCubit>().saveRecord(
+                  context.read<HomeCubit>().saveRecord(
                         firstName: firstNameController.text,
                         lastName: lastNameController.text,
                         email: emailController.text,
@@ -134,7 +134,7 @@ void showDialogAddEdit(
                   return;
                 }
 
-                context.read<EmployeeCubit>().updateRecord(
+                context.read<HomeCubit>().updateRecord(
                       firstName: firstNameController.text,
                       lastName: lastNameController.text,
                       email: emailController.text,

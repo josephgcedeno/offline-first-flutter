@@ -2,20 +2,38 @@ part of 'home_cubit.dart';
 
 class HomeState {}
 
-class ConnectivityChanges extends HomeState {
-  ConnectivityChanges({
-    required this.connected,
+class FetchEmployeesSuccess extends HomeState {
+  FetchEmployeesSuccess({
+    required this.items,
   });
 
-  final bool connected;
+  final List<EmployeeResponse> items;
 }
 
-class FetchSyncDataLoading extends HomeState {}
+class FetchEmployeesFailed extends HomeState {}
 
-class FetchSyncDataSuccess extends HomeState {
-  FetchSyncDataSuccess({required this.noActions});
+class FetchEmployeesLoading extends HomeState {}
 
-  final int noActions;
+class CreateEmployeeLoading extends HomeState {}
+
+class CreateEmployeeSuccess extends HomeState {}
+
+class CreateEmployeeFailed extends HomeState {}
+
+class UpdateEmployeeLoading extends HomeState {}
+
+class UpdateEmployeeSuccess extends HomeState {
+  UpdateEmployeeSuccess({
+    required this.employeeResponse,
+  });
+
+  final EmployeeResponse employeeResponse;
 }
 
-class FetchSyncDataFailed extends HomeState {}
+class UpdateEmployeeFailed extends HomeState {}
+
+class DeleteEmployeeLoading extends HomeState {}
+
+class DeleteEmployeeSuccess extends HomeState {}
+
+class DeleteEmployeeFailed extends HomeState {}

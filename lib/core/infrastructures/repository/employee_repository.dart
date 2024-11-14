@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 class EmployeeRepository {
   final EmployeeCache employeeCache = EmployeeCache();
 
-  Future<bool> get hasConnectivity async =>
+  Future<bool> get deviceIsOnline async =>
       (await Connectivity().checkConnectivity()).first !=
       ConnectivityResult.none;
 
@@ -20,11 +20,13 @@ class EmployeeRepository {
     http.Response? response;
 
     try {
-      if (await hasConnectivity) {
+      if (await deviceIsOnline) {
         response = await http.get(
           Uri.https('parse-baas-sample.onrender.com', '/dummy/employee'),
           headers: httpRequestHeaders,
         );
+
+        // log(response.body);
 
         if (response.statusCode < 200 || response.statusCode > 299) {
           if (response.statusCode == 401) {
@@ -41,9 +43,7 @@ class EmployeeRepository {
             return EmployeeResponse.fromJson(e as Map<String, dynamic>);
           }).toList(),
         );
-
         employeeCache.saveToLocal(item);
-
         return item;
       }
 
@@ -57,13 +57,13 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> saveRecord(
+  Future<void> addEmployee(
     EmployeeRequest employeeRequest, {
     bool syncing = false,
   }) async {
     http.Response? response;
     try {
-      if (await hasConnectivity) {
+      if (await deviceIsOnline) {
         response = await http.post(
           Uri.https('parse-baas-sample.onrender.com', '/dummy/employee'),
           headers: httpRequestHeaders,
@@ -97,14 +97,14 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> updateRecord(
+  Future<void> updateEmployee(
     EmployeeRequest employeeRequest, {
     bool syncing = false,
   }) async {
     http.Response? response;
 
     try {
-      if (await hasConnectivity) {
+      if (await deviceIsOnline) {
         response = await http.put(
           Uri.https(
             'parse-baas-sample.onrender.com',
@@ -141,14 +141,14 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> deleteRecord(
+  Future<void> deleteEmployee(
     int employeeId, {
     bool syncing = false,
   }) async {
     http.Response? response;
 
     try {
-      if (await hasConnectivity) {
+      if (await deviceIsOnline) {
         response = await http.delete(
           Uri.https(
             'parse-baas-sample.onrender.com',

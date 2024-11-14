@@ -1,6 +1,7 @@
+import 'package:flirt/core/application/service/cubit/sync_cubit.dart';
 import 'package:flirt/core/interfaces/widgets/modify_employee_dialog.dart';
-import 'package:flirt/core/module/home/application/service/cubit/employee_cubit.dart';
 import 'package:flirt/core/module/home/application/service/cubit/home_cubit.dart';
+import 'package:flirt/internal/enums.dart';
 import 'package:flirt/internal/ui_utils.dart';
 import 'package:flirt/internal/utils.dart';
 import 'package:flutter/material.dart';
@@ -15,68 +16,38 @@ class ControllerScreen extends StatefulWidget {
 }
 
 class _ControllerScreenState extends State<ControllerScreen> {
-  Widget? item;
+  Widget? connectivityBorder;
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<HomeCubit, HomeState>(
-      listenWhen: (HomeState previous, HomeState current) =>
-          current is FetchSyncDataLoading ||
-          current is FetchSyncDataSuccess ||
-          current is ConnectivityChanges,
-      listener: (BuildContext context, HomeState state) {
-        if (state is ConnectivityChanges) {
+    return BlocListener<SyncCubit, SyncState>(
+      listenWhen: (SyncState previous, SyncState current) =>
+          current is SyncDataLoading ||
+          current is SyncDataSuccess ||
+          current is ConnectivityStatus,
+      listener: (BuildContext context, SyncState state) {
+        if (state is ConnectivityStatus) {
           if (state.connected) {
-            context.read<HomeCubit>().syncDataWhenOnline();
-            item = null;
+            context.read<SyncCubit>().syncData();
+            connectivityBorder =
+                const _ConnectivityIndicator(status: ConnectionStatus.syncing);
           } else {
-            /// call sync function heree
-            item = Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(color: Colors.red),
-              child: const Center(
-                child: Text(
-                  'Offline',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            );
+            connectivityBorder =
+                const _ConnectivityIndicator(status: ConnectionStatus.offline);
           }
           setState(() {});
-        } else if (state is FetchSyncDataLoading) {
-          item = Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(color: Colors.green),
-            child: const Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  SyncingAnimation(),
-                  SizedBox(width: 5),
-                  Text(
-                    'Syncing',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          );
-          setState(() {});
-        } else if (state is FetchSyncDataSuccess) {
-          context.read<EmployeeCubit>().getAllEmployee();
+        } else if (state is SyncDataSuccess) {
+          context.read<HomeCubit>().getAllEmployees();
 
           setState(() {
-            item = null;
+            connectivityBorder =
+                const _ConnectivityIndicator(status: ConnectionStatus.online);
           });
-
-          final int noActions = state.noActions;
 
           showSnackbar(
             context,
             isSuccessful: true,
-            message: noActions != 0
-                ? 'Successfully synced $noActions record.'
-                : 'No action needed to sync.',
+            message: 'Successfully synced data.',
           );
         }
       },
@@ -84,7 +55,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
         appBar: AppBar(
           backgroundColor: Colors.orangeAccent,
           leading: GestureDetector(
-            onTap: () => context.read<HomeCubit>().syncDataWhenOnline(),
+            onTap: () => context.read<SyncCubit>().syncData(),
             child: const Icon(Icons.sync),
           ),
           title: const Text('Employee Management'),
@@ -103,14 +74,13 @@ class _ControllerScreenState extends State<ControllerScreen> {
                   child: child,
                 );
               },
-              child: item ?? const SizedBox.shrink(),
+              child: connectivityBorder ?? const SizedBox.shrink(),
             ),
-            Expanded(
-              child: widget.body,
-            ),
+            Expanded(child: widget.body),
           ],
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.miniCenterFloat,
         floatingActionButton: FloatingActionButton(
           onPressed: () => showDialogAddEdit(
             null,
@@ -120,5 +90,48 @@ class _ControllerScreenState extends State<ControllerScreen> {
         ),
       ),
     );
+  }
+}
+
+class _ConnectivityIndicator extends StatelessWidget {
+  const _ConnectivityIndicator({required this.status});
+
+  final ConnectionStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (status) {
+      case ConnectionStatus.offline:
+        return Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(color: Colors.red),
+          child: const Center(
+            child: Text(
+              'Offline',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      case ConnectionStatus.syncing:
+        return Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(color: Colors.green),
+          child: const Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                SyncingAnimation(),
+                SizedBox(width: 5),
+                Text(
+                  'Syncing',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        );
+      case ConnectionStatus.online:
+        return const SizedBox.shrink();
+    }
   }
 }

@@ -1,121 +1,167 @@
-import 'dart:convert';
+import 'dart:math';
 
 import 'package:flirt/core/domain/models/employee/employee_request.dart';
 import 'package:flirt/core/domain/models/employee/employee_response.dart';
-import 'package:flirt/core/domain/repository/secure_storage_repository.dart';
 import 'package:flirt/core/infrastructures/repository/employee_repository.dart';
-import 'package:flirt/internal/enums.dart';
-import 'package:flirt/internal/local_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'home_state.dart';
 
-/// HomeCubit is a Cubit that manages the state of the home screen.
-/// It handles connectivity changes and data synchronization.
 class HomeCubit extends Cubit<HomeState> {
-  /// Constructor for HomeCubit.
-  ///
-  /// [storage] An instance of ISecureStorageRepository for secure storage operations.
-  /// [employeeRepository] An instance of EmployeeRepository for employee data operations.
   HomeCubit({
-    required this.storage,
     required this.employeeRepository,
   }) : super(HomeState());
   final EmployeeRepository employeeRepository;
-  final ISecureStorageRepository storage;
 
-  /// Emits a state change based on connectivity status.
-  ///
-  /// [connected] A boolean indicating the current connectivity status.
-  void connectivityChange(bool connected) =>
-      emit(ConnectivityChanges(connected: connected));
-
-  /// Initiates data synchronization when the device is online.
-  /// This function fetches modified tables, syncs employee records, and updates the state accordingly.
-  Future<void> syncDataWhenOnline() async {
-    emit(FetchSyncDataLoading());
+  /// Fetches all employees from the repository.
+  /// Emits [FetchEmployeesLoading], [FetchEmployeesSuccess], or [FetchEmployeesFailed].
+  Future<void> getAllEmployees() async {
+    emit(FetchEmployeesLoading());
     try {
-      final String modifieTables =
-          await storage.read(key: lsModifiedTable) ?? '[]';
-      final List<String> items =
-          List<String>.from(jsonDecode(modifieTables) as List<dynamic>);
+      final List<EmployeeResponse> getLocalItems =
+          await employeeRepository.fetchEmployees();
 
-      int totalActions = 0;
-
-      for (int i = 0; i < items.length; i++) {
-        final int noActions = await _syncEmployeeRecords(items[i]);
-
-        totalActions += noActions;
+      if (await employeeRepository.deviceIsOnline) {
+        getLocalItems.sort(
+          (EmployeeResponse a, EmployeeResponse b) =>
+              DateTime.parse(a.updatedAt!)
+                  .compareTo(DateTime.parse(b.updatedAt!)),
+        );
       }
 
-      emit(FetchSyncDataSuccess(noActions: totalActions));
-    } catch (e) {
-      emit(FetchSyncDataFailed());
+      emit(FetchEmployeesSuccess(items: getLocalItems));
+    } catch (_) {
+      emit(FetchEmployeesFailed());
     }
   }
 
-  /// Syncs employee records for a given table.
+  /// Saves a new employee record.
   ///
-  /// [table] The name of the table to sync records from.
-  /// Returns The number of actions performed during the sync process.
-  Future<int> _syncEmployeeRecords(String table) async {
+  /// [firstName]: The first name of the employee.
+  /// [lastName]: The last name of the employee.
+  /// [email]: The email address of the employee.
+  /// [phoneNumber]: The phone number of the employee.
+  /// [hireDate]: The hire date of the employee.
+  /// [jobId]: The job ID of the employee.
+  /// [salary]: The salary of the employee.
+  /// [commissionPct]: The commission percentage of the employee.
+  /// [managerId]: The ID of the employee's manager.
+  ///
+  /// Emits [CreateEmployeeLoading], [CreateEmployeeSuccess], or [CreateEmployeeFailed].
+  Future<void> saveRecord({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNumber,
+    required String hireDate,
+    required String jobId,
+    required double salary,
+    required double commissionPct,
+    required int managerId,
+  }) async {
+    emit(CreateEmployeeLoading());
     try {
-      final List<EmployeeResponse> res = await employeeRepository.employeeCache
-          .getUnsyncedData<EmployeeResponse>(table);
+      await employeeRepository.addEmployee(
+        EmployeeRequest(
+          employeeId: Random().nextInt(3000),
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNumber: phoneNumber,
+          hireDate: hireDate,
+          jobId: jobId,
+          salary: salary,
+          commissionPct: commissionPct,
+          managerId: managerId,
+        ),
+      );
 
-      if (res.isEmpty) return 0;
+      emit(CreateEmployeeSuccess());
+    } catch (_) {
+      emit(CreateEmployeeFailed());
+    }
+  }
 
-      for (int i = 0; i < res.length; i++) {
-        final EmployeeResponse item = res[i];
+  /// Updates an existing employee record.
+  ///
+  /// [firstName]: The first name of the employee.
+  /// [lastName]: The last name of the employee.
+  /// [email]: The email address of the employee.
+  /// [phoneNumber]: The phone number of the employee.
+  /// [hireDate]: The hire date of the employee.
+  /// [jobId]: The job ID of the employee.
+  /// [salary]: The salary of the employee.
+  /// [commissionPct]: The commission percentage of the employee.
+  /// [managerId]: The ID of the employee's manager.
+  /// [employeeId]: The ID of the employee to be updated.
+  ///
+  /// Emits [UpdateEmployeeLoading], [UpdateEmployeeSuccess], or [UpdateEmployeeFailed].
+  Future<void> updateRecord({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNumber,
+    required String hireDate,
+    required String jobId,
+    required double salary,
+    required double commissionPct,
+    required int managerId,
+    required int employeeId,
+  }) async {
+    emit(UpdateEmployeeLoading());
+    try {
+      final EmployeeRequest item = EmployeeRequest(
+        employeeId: employeeId,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phoneNumber: phoneNumber,
+        hireDate: hireDate,
+        jobId: jobId,
+        salary: salary,
+        commissionPct: commissionPct,
+        managerId: managerId,
+      );
 
-        switch (item.action) {
-          case Action.create:
-            await employeeRepository.saveRecord(
-              EmployeeRequest(
-                employeeId: item.employeeId,
-                firstName: item.firstName,
-                lastName: item.lastName,
-                email: item.email,
-                phoneNumber: item.phoneNumber,
-                hireDate: item.hireDate,
-                jobId: item.jobId,
-                salary: item.salary,
-                commissionPct: item.commissionPct,
-                managerId: item.managerId,
-              ),
-              syncing: true,
-            );
-          case Action.update:
-            await employeeRepository.updateRecord(
-              EmployeeRequest(
-                employeeId: item.employeeId,
-                firstName: item.firstName,
-                lastName: item.lastName,
-                email: item.email,
-                phoneNumber: item.phoneNumber,
-                hireDate: item.hireDate,
-                jobId: item.jobId,
-                salary: item.salary,
-                commissionPct: item.commissionPct,
-                managerId: item.managerId,
-              ),
-              syncing: true,
-            );
-          case Action.delete:
-            await employeeRepository.deleteRecord(
-              item.employeeId,
-              syncing: true,
-            );
-          default:
-        }
-      }
+      await employeeRepository.updateEmployee(item);
 
-      if (!await employeeRepository.hasConnectivity) return res.length;
-      await employeeRepository.employeeCache.truncateRecord(table);
+      emit(
+        UpdateEmployeeSuccess(
+          employeeResponse: EmployeeResponse(
+            employeeId: item.employeeId,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            hireDate: item.hireDate,
+            jobId: item.jobId,
+            salary: item.salary,
+            commissionPct: item.commissionPct,
+            managerId: item.managerId,
+            updatedAt: '',
+          ),
+        ),
+      );
+    } catch (_) {
+      emit(UpdateEmployeeFailed());
+    }
+  }
 
-      return res.length;
-    } catch (e) {
-      rethrow;
+  /// Deletes an employee record.
+  ///
+  /// [employeeId]: The ID of the employee to be deleted.
+  ///
+  /// Emits [DeleteEmployeeLoading], [DeleteEmployeeSuccess], or [DeleteEmployeeFailed].
+  Future<void> deleteRecord({
+    required int employeeId,
+  }) async {
+    emit(DeleteEmployeeLoading());
+    try {
+      await employeeRepository.deleteEmployee(employeeId);
+
+      emit(DeleteEmployeeSuccess());
+    } catch (_) {
+      emit(DeleteEmployeeFailed());
     }
   }
 }
