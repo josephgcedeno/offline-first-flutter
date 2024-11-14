@@ -44,59 +44,63 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<int> _syncEmployeeRecords(String table) async {
-    final List<EmployeeResponse> res = await employeeRepository.employeeCache
-        .getUnsyncedData<EmployeeResponse>(table);
+    try {
+      final List<EmployeeResponse> res = await employeeRepository.employeeCache
+          .getUnsyncedData<EmployeeResponse>(table);
 
-    if (res.isEmpty) return 0;
+      if (res.isEmpty) return 0;
 
-    for (int i = 0; i < res.length; i++) {
-      final EmployeeResponse item = res[i];
+      for (int i = 0; i < res.length; i++) {
+        final EmployeeResponse item = res[i];
 
-      switch (item.action) {
-        case Action.create:
-          await employeeRepository.saveRecord(
-            EmployeeRequest(
-              employeeId: item.employeeId,
-              firstName: item.firstName,
-              lastName: item.lastName,
-              email: item.email,
-              phoneNumber: item.phoneNumber,
-              hireDate: item.hireDate,
-              jobId: item.jobId,
-              salary: item.salary,
-              commissionPct: item.commissionPct,
-              managerId: item.managerId,
-            ),
-            syncing: true,
-          );
-        case Action.update:
-          await employeeRepository.updateRecord(
-            EmployeeRequest(
-              employeeId: item.employeeId,
-              firstName: item.firstName,
-              lastName: item.lastName,
-              email: item.email,
-              phoneNumber: item.phoneNumber,
-              hireDate: item.hireDate,
-              jobId: item.jobId,
-              salary: item.salary,
-              commissionPct: item.commissionPct,
-              managerId: item.managerId,
-            ),
-            syncing: true,
-          );
-        case Action.delete:
-          await employeeRepository.deleteRecord(
-            item.employeeId,
-            syncing: true,
-          );
-        default:
+        switch (item.action) {
+          case Action.create:
+            await employeeRepository.saveRecord(
+              EmployeeRequest(
+                employeeId: item.employeeId,
+                firstName: item.firstName,
+                lastName: item.lastName,
+                email: item.email,
+                phoneNumber: item.phoneNumber,
+                hireDate: item.hireDate,
+                jobId: item.jobId,
+                salary: item.salary,
+                commissionPct: item.commissionPct,
+                managerId: item.managerId,
+              ),
+              syncing: true,
+            );
+          case Action.update:
+            await employeeRepository.updateRecord(
+              EmployeeRequest(
+                employeeId: item.employeeId,
+                firstName: item.firstName,
+                lastName: item.lastName,
+                email: item.email,
+                phoneNumber: item.phoneNumber,
+                hireDate: item.hireDate,
+                jobId: item.jobId,
+                salary: item.salary,
+                commissionPct: item.commissionPct,
+                managerId: item.managerId,
+              ),
+              syncing: true,
+            );
+          case Action.delete:
+            await employeeRepository.deleteRecord(
+              item.employeeId,
+              syncing: true,
+            );
+          default:
+        }
       }
+
+      if (!await employeeRepository.hasConnectivity) return res.length;
+      await employeeRepository.employeeCache.truncateRecord(table);
+
+      return res.length;
+    } catch (e) {
+      rethrow;
     }
-
-    if (!await employeeRepository.hasConnectivity) return res.length;
-    await employeeRepository.employeeCache.truncateRecord(table);
-
-    return res.length;
   }
 }
